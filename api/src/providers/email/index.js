@@ -15,6 +15,8 @@ const EmailDelivery = model('EmailDelivery', baseSchema({
   to: String,
   subject: String,
   text: { type: String, select: false },
+  html: { type: String, select: false },
+  headers: { type: Object, select: false },
   driver: String,
   status: { type: String, enum: ['queued', 'sending', 'sent', 'retrying', 'failed', 'logged'], index: true },
   attempts: { type: Number, default: 0 },
@@ -67,18 +69,18 @@ async function deliver(id) {
     { _id: id, status: { $in: ['queued', 'retrying'] } },
     { status: 'sending' },
     { returnDocument: 'after' },
-  ).select('+text');
+  ).select('+text +html +headers');
   if (!job) return;
   if (job.driver === 'log') {
     console.log(`\n[EMAIL:MOCK] event=${job.event} to=${job.to}\nSubject: ${job.subject}\n${job.text}\n`);
-    await EmailDelivery.updateOne({ _id: id }, { status: 'logged', sentAt: new Date(), $unset: { text: 1 } });
+    await EmailDelivery.updateOne({ _id: id }, { status: 'logged', sentAt: new Date(), $unset: { text: 1, html: 1, headers: 1 } });
     return;
   }
   try {
     const info = await getTransport().sendMail({
-      from: env.emailFrom, to: job.to, subject: job.subject, text: job.text, html: renderHtml(job.subject, job.text),
+      from: env.emailFrom, to: job.to, subject: job.subject, text: job.text, html: job.html || renderHtml(job.subject, job.text), headers: job.headers || undefined,
     });
-    await EmailDelivery.updateOne({ _id: id }, { status: 'sent', sentAt: new Date(), messageId: info.messageId, $unset: { text: 1, lastError: 1 } });
+    await EmailDelivery.updateOne({ _id: id }, { status: 'sent', sentAt: new Date(), messageId: info.messageId, $unset: { text: 1, html: 1, headers: 1, lastError: 1 } });
   } catch (err) {
     const attempts = job.attempts + 1;
     const failed = attempts >= MAX_ATTEMPTS;
@@ -87,18 +89,18 @@ async function deliver(id) {
       attempts,
       lastError: String(err.message || err).replace(/pass\w*[=:]\S+/gi, '[redacted]').slice(0, 300),
       nextAttemptAt: new Date(Date.now() + Math.min(60, 2 ** attempts) * 60e3),
-      ...(failed ? { $unset: { text: 1 } } : {}),
+      ...(failed ? { $unset: { text: 1, html: 1, headers: 1 } } : {}),
     });
     console.error(`[email] ${job.event} to ${job.to} failed (attempt ${attempts}): ${err.code || ''} ${err.message}`);
   }
 }
 
 /** Queue an email (idempotent by dedupeKey) and attempt delivery straight away in the background. */
-async function sendEmail({ event, to, subject, text, dedupeKey }) {
+async function sendEmail({ event, to, subject, text, html, headers, dedupeKey }) {
   let doc;
   try {
     doc = await EmailDelivery.create({
-      event, to, subject, text: absolutize(text), driver: driver(), status: 'queued', attempts: 0, nextAttemptAt: new Date(), dedupeKey,
+      event, to, subject, text: absolutize(text), html, headers, driver: driver(), status: 'queued', attempts: 0, nextAttemptAt: new Date(), dedupeKey,
     });
   } catch (e) {
     if (e.code === 11000) return { duplicate: true };

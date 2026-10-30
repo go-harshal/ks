@@ -77,6 +77,7 @@ function Editor({ id, base, label, fields, opts, onClose, onSaved }) {
     fields.forEach((f) => {
       if (f.type === 'checkbox') out[f.name] = fd.get(f.name) === 'on';
       else if (f.type === 'image') out[f.name] = doc?.[f.name] || '';
+      else if (f.type === 'checkboxes') out[f.name] = fd.getAll(f.name).map(String);
       else out[f.name] = String(fd.get(f.name) ?? '');
     });
     return out;
@@ -118,10 +119,15 @@ function Editor({ id, base, label, fields, opts, onClose, onSaved }) {
                 const fid = `cm-${f.name}`; const err = errors[f.name]; const v = doc[f.name];
                 const common = { id: fid, name: f.name, 'aria-invalid': Boolean(err), 'data-testid': `${base}-field-${f.name}` };
                 return (
-                  <div key={f.name} className="adm-field" style={{ gridColumn: f.full || f.type === 'textarea' || f.type === 'richtext' ? '1 / -1' : undefined }}>
+                  <div key={f.name} className="adm-field" style={{ gridColumn: f.full || ['textarea', 'richtext', 'checkboxes'].includes(f.type) ? '1 / -1' : undefined }}>
                     {f.type === 'checkbox' ? (
                       <label className="adm-check"><input type="checkbox" {...common} defaultChecked={Boolean(v)} />{f.label}</label>
                     ) : <label htmlFor={fid}>{f.label}{f.required && <span aria-hidden="true"> *</span>}</label>}
+                    {f.type === 'checkboxes' && (
+                      <div className="adm-checks" data-testid={`${base}-field-${f.name}`}>
+                        {(f.options || opts[f.name] || []).map((o) => { const [val, lab] = Array.isArray(o) ? o : [o, o]; return <label key={val} className="adm-check"><input type="checkbox" name={f.name} value={val} defaultChecked={(v || []).includes(val)} data-testid={`${base}-field-${f.name}-${val}`} />{lab}</label>; })}
+                      </div>
+                    )}
                     {f.type === 'richtext' && <RichText name={f.name} initial={v || ''} testId={`${base}-field-${f.name}`} labelId={fid} />}
                     {f.type === 'textarea' && <textarea {...common} className="adm-textarea" rows={f.rows || 4} defaultValue={v || ''} />}
                     {f.type === 'select' && (

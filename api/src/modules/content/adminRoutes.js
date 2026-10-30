@@ -66,6 +66,18 @@ const profileSchema = z.object({
 });
 router.use(contentRoutes({ base: 'team', Model: TeamProfile, schema: profileSchema, label: 'Profile', slugFrom: 'name', adminPath: '/phobos/team', publicPath: '/about#team' }));
 
+// ---- Testimonials (publish only with consent; permission note optional per business decision) ----
+const { Testimonial } = require('../newsletter/models');
+const testimonialSchema = z.object({
+  title: o(160), slug, quote: t(1500, 10), name: t(120, 2), role: o(120), company: o(160),
+  allServices: z.boolean().default(false),
+  serviceSlugs: z.union([z.array(z.string().max(80)).max(20), z.string().max(80).transform((v) => (v ? [v] : []))]).default([]),
+  permissionNote: o(1000),
+  permissionDate: z.union([z.literal(''), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]).optional().transform((v) => (v ? new Date(`${v}T00:00:00+05:30`) : null)),
+});
+const checkTestimonial = (d) => { if (d.name !== undefined && !d.title) d.title = [d.name, d.company].filter(Boolean).join(' — '); };
+router.use(contentRoutes({ base: 'testimonials', Model: Testimonial, schema: testimonialSchema, check: checkTestimonial, label: 'Testimonial', adminPath: '/phobos/testimonials', publicPath: '/services' }));
+
 // ---- Public image upload for content (cover images) ----
 const IMG = { png: (b) => b.subarray(0, 4).toString('hex') === '89504e47', jpg: (b) => b.subarray(0, 3).toString('hex') === 'ffd8ff', jpeg: (b) => b.subarray(0, 3).toString('hex') === 'ffd8ff', webp: (b) => b.subarray(0, 4).toString() === 'RIFF' && b.subarray(8, 12).toString() === 'WEBP' };
 const imgUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024, files: 1 } });

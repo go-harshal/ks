@@ -245,3 +245,4 @@ a.adm-nav-item:hover { background: var(--a-surface-2); color: var(--a-text); }
 .adm-rte-area ul, .adm-rte-area ol { padding-left: 1.3em; margin: 0 0 0.8em; }
 .adm-rte-area blockquote { margin: 0 0 0.8em; padding-left: 14px; border-left: 3px solid var(--a-accent); color: var(--a-muted); }
 .adm-rte-area a { color: var(--a-accent-ink); text-decoration: underline; }
+.adm-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 16px; padding: 10px 12px; border: 1px solid var(--a-border); border-radius: 4px; }

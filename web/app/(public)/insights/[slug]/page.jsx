@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import CTABand from '@/components/public/sections/CTABand';
+import CopyLink from '@/components/public/CopyLink';
 import { getPublic, SITE_URL } from '@/lib/api';
 import i from '../insights.module.css';
 
@@ -46,7 +47,29 @@ export default async function ArticlePage({ params }) {
         {/* Body HTML is sanitised server-side to p/h2/h3/strong/em/ul/ol/li/a/blockquote/br */}
         <div className={i.prose} dangerouslySetInnerHTML={{ __html: a.body }} data-testid="article-body" />
         {a.tags?.length > 0 && <ul className={i.tags} aria-label="Tags">{a.tags.map((t) => <li key={t}>{t}</li>)}</ul>}
+        <div className={i.share} data-testid="article-share">
+          <span>Share this article</span>
+          <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${SITE_URL}/insights/${a.slug}`)}`} target="_blank" rel="noopener noreferrer" className={i.shareBtn} data-testid="article-share-linkedin">LinkedIn<span className="visually-hidden"> (opens in a new tab)</span></a>
+          <a href={`https://x.com/intent/post?url=${encodeURIComponent(`${SITE_URL}/insights/${a.slug}`)}&text=${encodeURIComponent(a.title)}`} target="_blank" rel="noopener noreferrer" className={i.shareBtn} data-testid="article-share-x">X<span className="visually-hidden"> (opens in a new tab)</span></a>
+          <CopyLink url={`${SITE_URL}/insights/${a.slug}`} className={i.shareBtn} />
+        </div>
       </article>
+      {a.related?.length > 0 && (
+        <section className={`container ${i.related}`} aria-labelledby="related-title" data-testid="article-related">
+          <h2 id="related-title">Related articles</h2>
+          <ul>
+            {a.related.map((r) => (
+              <li key={r.id}>
+                <Link href={`/insights/${r.slug}`} data-testid={`related-${r.slug}`}>
+                  <span className="overline">{r.category || 'Insights'} · {r.readingMinutes} min read</span>
+                  <b>{r.title}</b>
+                  <small>{r.excerpt}</small>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <CTABand testId="article-cta" title="Want to talk this through?" body="Tell us about your project or hiring need and we will reply with next steps." primary={{ label: "Let's Discuss Your Project", href: '/contact?type=project' }} secondary={{ label: 'More insights', href: '/insights' }} />
     </>
   );

@@ -2,6 +2,7 @@ const { Router } = require('express');
 const multer = require('multer');
 const rateLimit = require('express-rate-limit');
 const { Article, TeamProfile, CaseStudy, Job, Application } = require('./models');
+const { Testimonial } = require('../newsletter/models');
 const { FileAsset } = require('../leads/models');
 const { z, parse } = require('../../middleware/validate');
 const { badRequest, notFound } = require('../../utils/errors');
@@ -49,8 +50,20 @@ router.get('/articles/:slug', async (req, res) => {
   const d = await Article.findOne({ slug: req.params.slug, status: 'published' }).select('-history -authorId -reviewNote').lean();
   if (!d) throw notFound('Article not found');
   const { _id, coverImageId, authorProfileId, ...rest } = d;
+  const relatedRows = await Article.find({ status: 'published', _id: { $ne: _id }, $or: [{ category: d.category || '__none__' }, { tags: { $in: d.tags || [] } }] })
+    .select('title slug category excerpt readingMinutes coverImageId publishedAt tags').sort({ publishedAt: -1 }).limit(12).lean();
+  const score = (r) => (r.category && r.category === d.category ? 2 : 0) + (r.tags || []).filter((x) => (d.tags || []).includes(x)).length;
+  const related = relatedRows.sort((x, y) => score(y) - score(x)).slice(0, 3).map(({ _id: rid, coverImageId: cid, tags, ...r }) => ({ ...r, id: rid, coverUrl: coverUrl(cid) }));
   const a = await authors([authorProfileId]);
-  res.json({ data: { ...rest, id: _id, coverUrl: coverUrl(coverImageId), author: a[authorProfileId] || null } });
+  res.json({ data: { ...rest, id: _id, coverUrl: coverUrl(coverImageId), author: a[authorProfileId] || null, related } });
+});
+
+// ---- Testimonials for a service page ----
+router.get('/testimonials', async (req, res) => {
+  const service = String(req.query.service || '').slice(0, 80);
+  const f = { status: 'published', ...(service ? { $or: [{ allServices: true }, { serviceSlugs: service }] } : {}) };
+  const rows = await Testimonial.find(f).select('quote name role company').sort({ publishedAt: -1 }).limit(6).lean();
+  res.json({ data: rows.map(({ _id, ...r }) => ({ ...r, id: _id })) });
 });
 
 // ---- Jobs ----

@@ -6,6 +6,7 @@ const { verifyTransport, sendEmail, processDue, EmailDelivery } = require('../..
 const { HttpError } = require('../../utils/errors');
 const { runFollowupReminders } = require('../reminders/service');
 const { runWeeklyDigest } = require('../reminders/weekly');
+const { processScheduled } = require('../newsletter/service');
 
 // ---- Admin: email health (Super Admin / settings.manage) ----
 const admin = Router();
@@ -52,7 +53,8 @@ function cronJob(name, work) {
     return res.status(202).json({ data: { accepted: true } });
   });
 }
-cronJob('email-retry', processDue);
+// Every 15 min: retry failed emails, then send newsletters whose scheduled time has passed.
+cronJob('email-retry', async () => ({ retried: await processDue(), newsletterRecipients: await processScheduled() }));
 cronJob('followup-reminders', runFollowupReminders);
 cronJob('weekly-pipeline', runWeeklyDigest);
 

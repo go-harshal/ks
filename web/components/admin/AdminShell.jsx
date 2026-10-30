@@ -19,9 +19,9 @@ const MODULES = [
   { label: 'Blog / Insights', href: '/phobos/insights', icon: PenLine, ready: true, perm: ['content.manage', 'content.draft'] },
   { label: 'Careers & Applications', href: '/phobos/careers', icon: GraduationCap, ready: true, perm: ['content.manage', 'content.draft', 'applications.manage'] },
   { label: 'Team & Founder Profiles', href: '/phobos/team', icon: UserSquare2, ready: true, perm: ['content.manage', 'content.draft'] },
-  { label: 'Testimonials', icon: Quote },
+  { label: 'Testimonials', href: '/phobos/testimonials', icon: Quote, ready: true, perm: ['content.manage', 'content.draft'] },
   { label: 'Partnerships', icon: Handshake },
-  { label: 'Newsletter Subscribers', icon: Mail },
+  { label: 'Newsletter', href: '/phobos/newsletter', icon: Mail, ready: true, perm: ['newsletter.manage', 'newsletter.draft'] },
   { label: 'Analytics & Reports', icon: BarChart3 },
   { label: 'User & Role Management', href: '/phobos/users', icon: ShieldCheck, ready: true, perm: 'users.manage' },
   { label: 'Website Settings', href: '/phobos/settings', icon: Settings, ready: true, perm: 'settings.manage' },
@@ -102,7 +102,7 @@ export default function AdminShell({ title, children }) {
 
       <div className="adm-main">
         <p className="adm-preview" role="note" data-testid="admin-preview-banner">
-          <strong>In progress.</strong> Dashboard, leads, case studies, insights, team profiles, careers, users and notifications use real data. Other modules arrive in later phases.
+          <strong>In progress.</strong> Dashboard, leads, case studies, insights, team profiles, testimonials, newsletter, careers, users and notifications use real data. Other modules arrive in later phases.
         </p>
         <header className="adm-top">
           <button type="button" className="adm-icon-btn adm-burger" aria-label="Open navigation" onClick={() => setSideOpen((v) => !v)} data-testid="admin-sidebar-toggle"><Menu aria-hidden="true" /></button>

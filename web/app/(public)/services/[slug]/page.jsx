@@ -6,6 +6,7 @@ import { SERVICE_GROUPS } from '@/lib/nav';
 import ProcessTimeline from '@/components/public/sections/ProcessTimeline';
 import ContentSlot from '@/components/public/sections/ContentSlot';
 import CTABand from '@/components/public/sections/CTABand';
+import Testimonials from '@/components/public/sections/Testimonials';
 import s from './service.module.css';
 
 const SERVICE_IMG = 'https://images.unsplash.com/photo-1696595883516-76c97aa3a164?auto=format&fit=crop&w=1600&q=80';
@@ -28,11 +29,12 @@ export async function generateMetadata({ params }) {
 
 export default async function ServicePage({ params }) {
   const { slug } = await params;
-  const [svc, steps, settings, all] = await Promise.all([
+  const [svc, steps, settings, all, quotes] = await Promise.all([
     getPublic(`/services/${slug}`),
     getPublic('/process-steps'),
     getPublic('/settings'),
     getPublic('/services'),
+    getPublic(`/testimonials?service=${encodeURIComponent(slug)}`, { revalidate: 30 }),
   ]);
   if (!svc) notFound();
 
@@ -148,6 +150,8 @@ export default async function ServicePage({ params }) {
           </div>
         </section>
       )}
+
+      <Testimonials items={quotes || []} />
 
       <CTABand
         testId="service-cta"

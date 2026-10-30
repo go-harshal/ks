@@ -22,7 +22,7 @@ hub.setMaxListeners(500);
 const visibleTo = (n, user) => (n.userId ? n.userId === user._id : !!n.perm && can(user, n.perm));
 
 function audienceFilter(user) {
-  const perms = ['leads.view_all', 'leads.assign', 'users.manage', 'settings.manage', 'content.manage', 'applications.manage'].filter((p) => can(user, p));
+  const perms = ['leads.view_all', 'leads.assign', 'users.manage', 'settings.manage', 'content.manage', 'applications.manage', 'newsletter.manage'].filter((p) => can(user, p));
   return { $or: [{ userId: user._id }, { userId: null, perm: { $in: perms } }] };
 }
 

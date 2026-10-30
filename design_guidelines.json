@@ -1,0 +1,285 @@
+{
+  "project_name": "Kreyszigg Softbizz Corporate Website & Integrated Admin Platform",
+  "client_specifications": {
+    "palette": {
+      "deep_slate": "#17232F",
+      "warm_ivory": "#F5F2EB",
+      "white": "#FFFFFF",
+      "muted_copper": "#A56F4E",
+      "neutral_border_light": "#E2DDD3",
+      "neutral_border_dark": "#253443",
+      "slate_muted": "#526374",
+      "slate_light": "#8E9EAF"
+    },
+    "typography": {
+      "font_family_primary": "Ubuntu, Arial, sans-serif",
+      "weights": {
+        "regular": 400,
+        "medium_semibold": 500,
+        "bold": 700
+      }
+    },
+    "styling_philosophy": "Plain CSS Modules + CSS Custom Properties, Strict Architectural Editorial Grid, zero generic AI slop, no repetitive card clones, no heavy gloss, pure crisp craftsmanship with deep slate + warm ivory + muted copper accents."
+  },
+  "colors": {
+    "surfaces": [
+      {
+        "name": "public_page",
+        "kind": "solid",
+        "bg": "#F5F2EB",
+        "on_bg": "#17232F",
+        "on_bg_muted": "#526374",
+        "roles": {
+          "link": "#17232F",
+          "link_hover": "#A56F4E",
+          "accent_cta": "#A56F4E",
+          "on_accent_cta": "#FFFFFF",
+          "border": "#E2DDD3"
+        }
+      },
+      {
+        "name": "public_card_white",
+        "kind": "solid",
+        "bg": "#FFFFFF",
+        "on_bg": "#17232F",
+        "on_bg_muted": "#526374",
+        "roles": {
+          "border": "#E2DDD3",
+          "tag_bg": "#F5F2EB",
+          "tag_text": "#17232F"
+        }
+      },
+      {
+        "name": "public_dark_section",
+        "kind": "solid",
+        "bg": "#17232F",
+        "on_bg": "#F5F2EB",
+        "on_bg_muted": "#8E9EAF",
+        "roles": {
+          "link": "#F5F2EB",
+          "link_hover": "#A56F4E",
+          "accent": "#A56F4E",
+          "border": "#253443"
+        }
+      },
+      {
+        "name": "hero_editorial_banner",
+        "kind": "solid",
+        "bg": "#17232F",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#8E9EAF",
+        "roles": {
+          "primary_cta_bg": "#A56F4E",
+          "primary_cta_text": "#FFFFFF",
+          "secondary_cta_border": "#8E9EAF",
+          "secondary_cta_text": "#F5F2EB"
+        }
+      },
+      {
+        "name": "copper_badge",
+        "kind": "solid",
+        "bg": "#A56F4E",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#F5F2EB"
+      },
+      {
+        "name": "ivory_badge",
+        "kind": "solid",
+        "bg": "#F5F2EB",
+        "on_bg": "#17232F",
+        "on_bg_muted": "#526374"
+      },
+      {
+        "name": "admin_light_page",
+        "kind": "solid",
+        "bg": "#F8F7F4",
+        "on_bg": "#17232F",
+        "on_bg_muted": "#526374",
+        "roles": {
+          "sidebar_bg": "#FFFFFF",
+          "sidebar_border": "#E2DDD3",
+          "topbar_bg": "#FFFFFF",
+          "card_bg": "#FFFFFF",
+          "card_border": "#E2DDD3",
+          "table_header_bg": "#F5F2EB",
+          "accent": "#A56F4E"
+        }
+      },
+      {
+        "name": "admin_dark_page",
+        "kind": "solid",
+        "bg": "#0F1720",
+        "on_bg": "#F5F2EB",
+        "on_bg_muted": "#8E9EAF",
+        "roles": {
+          "sidebar_bg": "#17232F",
+          "sidebar_border": "#253443",
+          "topbar_bg": "#17232F",
+          "card_bg": "#17232F",
+          "card_border": "#253443",
+          "table_header_bg": "#1D2B3A",
+          "accent": "#A56F4E"
+        }
+      },
+      {
+        "name": "admin_status_new",
+        "kind": "solid",
+        "bg": "#E8F0FE",
+        "on_bg": "#1A56DB",
+        "on_bg_muted": "#1A56DB"
+      },
+      {
+        "name": "admin_status_contacted",
+        "kind": "solid",
+        "bg": "#FEF3C7",
+        "on_bg": "#92400E",
+        "on_bg_muted": "#92400E"
+      },
+      {
+        "name": "admin_status_qualified",
+        "kind": "solid",
+        "bg": "#E0F2FE",
+        "on_bg": "#0369A1",
+        "on_bg_muted": "#0369A1"
+      },
+      {
+        "name": "admin_status_proposal_sent",
+        "kind": "solid",
+        "bg": "#F3E8FF",
+        "on_bg": "#6B21A8",
+        "on_bg_muted": "#6B21A8"
+      },
+      {
+        "name": "admin_status_won",
+        "kind": "solid",
+        "bg": "#DEF7EC",
+        "on_bg": "#03543F",
+        "on_bg_muted": "#03543F"
+      },
+      {
+        "name": "admin_status_lost",
+        "kind": "solid",
+        "bg": "#FDE8E8",
+        "on_bg": "#9B1C1C",
+        "on_bg_muted": "#9B1C1C"
+      }
+    ],
+    "accent": "#A56F4E",
+    "on_accent": "#FFFFFF"
+  },
+  "typography": {
+    "scale_px": {
+      "display": 56,
+      "h1": 44,
+      "h2": 32,
+      "h3": 24,
+      "h4": 18,
+      "body": 16,
+      "caption": 14
+    },
+    "font_family": "Ubuntu, -apple-system, BlinkMacSystemFont, Arial, sans-serif",
+    "font_heading": "Ubuntu, sans-serif",
+    "line_heights": {
+      "display": 1.1,
+      "h1": 1.15,
+      "h2": 1.25,
+      "h3": 1.35,
+      "body": 1.6,
+      "caption": 1.4
+    },
+    "letter_spacing": {
+      "display": "-0.025em",
+      "h1": "-0.02em",
+      "h2": "-0.015em",
+      "h3": "-0.01em",
+      "overline": "0.15em",
+      "body": "0em"
+    }
+  },
+  "entry_surfaces": {
+    "/": "Asymmetric editorial split hero with bold typography and capability pillars left, structural architectural geometric graphic right on Warm Ivory (#F5F2EB) and Deep Slate (#17232F)",
+    "/services/mobile-app-development": "Deep Slate header badge leading into a high-density dual-column architectural blueprint layout with tech stack chips and sprint deliverables",
+    "/hire-developers": "Editorial taxonomy directory with sticky filter rail, multi-tier experience matrices, and transparent engagement model calculators",
+    "/phobos": "Executive command center with deep slate / crisp white dual-theme toggle, KPI metric slabs, Recharts pipeline charts, and full-fidelity leads management table"
+  },
+  "grids_and_layouts": {
+    "public_container": "max-w-[1280px] mx-auto px-6 sm:px-8 lg:px-12",
+    "asymmetric_hero_grid": "grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch",
+    "process_horizontal_grid": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+    "admin_layout": "flex min-h-screen bg-[var(--admin-bg)]",
+    "admin_sidebar_width": "260px fixed / collapsible",
+    "admin_kpi_grid": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5",
+    "admin_charts_grid": "grid grid-cols-1 lg:grid-cols-12 gap-6"
+  },
+  "motion": {
+    "transition_default": "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, background-color 0.2s ease, border-color 0.2s ease",
+    "hover_lift": "translateY(-3px)",
+    "prefers_reduced_motion": "@media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }"
+  },
+  "accessibility": {
+    "standard": "WCAG 2.2 AA",
+    "contrast_ratio_normal_text": ">= 4.5:1",
+    "contrast_ratio_large_text": ">= 3.0:1",
+    "focus_states": "outline: 2px solid var(--color-muted-copper); outline-offset: 2px;",
+    "data_testids": "All interactive buttons, inputs, links, tabs, and filters must provide role-based kebab-case data-testid attributes."
+  },
+  "media": {
+    "images": [
+      {
+        "category": "hero_architectural_structure",
+        "url": "https://images.unsplash.com/photo-1536501483244-925da0b87089?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBhcmNoaXRlY3R1cmUlMjBnZW9tZXRyaWMlMjBjb25jcmV0ZSUyMGZhY2FkZXxlbnwwfHx8fDE3OTMzNTU1Mjh8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Architectural geometric facade representing structured engineering and digital craftsmanship",
+        "placement": "Homepage Hero & Why Us section"
+      },
+      {
+        "category": "service_blueprint_texture",
+        "url": "https://images.unsplash.com/photo-1696595883516-76c97aa3a164?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzV8MHwxfHNlYXJjaHw0fHxhYnN0cmFjdCUyMGFyY2hpdGVjdHVyYWwlMjBzaGFkb3clMjB0ZXh0dXJlJTIwc2xhdGV8ZW58MHx8fHwxNzkzMzU1NTI4fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Minimalist geometric shadow texture for Mobile App Development service detail hero card",
+        "placement": "Mobile App Development Service Page"
+      },
+      {
+        "category": "code_and_engineering_abstract",
+        "url": "https://images.pexels.com/photos/34804021/pexels-photo-34804021.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Warm copper & slate abstract code depth for Hire Developers technical capability matrix",
+        "placement": "Hire Developers Page Header"
+      }
+    ],
+    "brand_logos": {
+      "note": "Use exact client provided assets at /brand/logo-primary.png and /brand/logo-mark.png. On dark footer, place logo inside a Warm Ivory (#F5F2EB) rounded-sm container to preserve original raster contrast."
+    }
+  },
+  "component_structure": {
+    "public_navigation": {
+      "path": "frontend/src/components/public/Header.tsx",
+      "features": "Sticky on scroll, Warm Ivory / Deep Slate contrast, Mega menu dropdown for 11 services across 3 tiers, primary CTA 'Let\\'s Discuss Your Project', accessible mobile sheet navigation drawer"
+    },
+    "public_footer": {
+      "path": "frontend/src/components/public/Footer.tsx",
+      "features": "Deep Slate (#17232F) background, 4-column structured editorial layout (Company, Services, Hire Developers, Get in Touch), Warm Ivory logo badge container, newsletter input with validation, Back-to-Top smooth trigger, floating WhatsApp quick-action button"
+    },
+    "cookie_consent": {
+      "path": "frontend/src/components/public/CookieBanner.tsx",
+      "features": "Minimalist floating banner with granular preferences and localStorage state persistence"
+    },
+    "admin_shell": {
+      "path": "frontend/src/components/admin/AdminLayout.tsx",
+      "features": "14-item navigation sidebar, topbar with active page breadcrumb, unread notification counter bell, search trigger, and instant Light/Dark CSS-variable theme toggle"
+    },
+    "admin_dashboard_widgets": {
+      "path": "frontend/src/pages/admin/AdminDashboard.tsx",
+      "features": "5 KPI summary tiles, Recharts monthly enquiry trend line, lead status conversion bar chart, recent inbound inquiries table, upcoming client follow-ups"
+    },
+    "admin_leads_table": {
+      "path": "frontend/src/pages/admin/AdminLeads.tsx",
+      "features": "Rich filterable leads data table with search, status filter (New, Contacted, Qualified, Proposal Sent, Won, Lost), date range filter, export button, and lead detail drawer"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the client's 4-color palette: Deep Slate (#17232F), Warm Ivory (#F5F2EB), White (#FFFFFF), and Muted Copper (#A56F4E).",
+    "Use CSS Custom Properties and modular styling with pure CSS / CSS modules or utility classes adhering directly to these design tokens.",
+    "Never display fabricated client logos, fake team photos, or made-up statistics. If a section is empty (e.g. Testimonials, Featured Projects, Insights), display an elegant, clean empty state or factual capability statement.",
+    "Ensure the Admin section (/phobos) has completely distinct visual architecture from the public site, supporting both crisp Light and Deep Slate Dark themes via CSS data-theme attributes.",
+    "Add explicit data-testid attributes to all interactive elements (navigation buttons, CTA links, tabs, filters, forms, theme toggles) for robust testing.",
+    "Ensure Ubuntu font is properly imported and applied across all heading and body styles."
+  ]
+}

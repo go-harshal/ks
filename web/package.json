@@ -1,0 +1,21 @@
+{
+  "name": "kreyszigg-web",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev -p 3000 -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "preview": "next build && next start -p 3000 -H 0.0.0.0"
+  },
+  "dependencies": {
+    "@fontsource/ubuntu": "^5.3.0",
+    "lucide-react": "^1.65.0",
+    "next": "16",
+    "react": "19",
+    "react-dom": "19",
+    "react-is": "19",
+    "recharts": "^3.10.1"
+  }
+}

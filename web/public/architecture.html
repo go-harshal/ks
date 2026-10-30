@@ -1,0 +1,597 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=robots content=noindex><title>Kreyszigg Softbizz - Phase 2 Architecture (Approved)</title><style>body{font-family:Ubuntu,Segoe UI,Arial,sans-serif;max-width:1200px;margin:40px auto;padding:0 24px;color:#17232F;background:#F5F2EB;line-height:1.5}table{border-collapse:collapse;width:100%;font-size:13px;margin:12px 0;background:#fff}td,th{border:1px solid #d8d2c6;padding:6px 8px;vertical-align:top;text-align:left}th{background:#17232F;color:#fff}h2{border-bottom:2px solid #A56F4E;padding-bottom:4px;margin-top:40px}pre{background:#17232F;color:#F5F2EB;padding:16px;overflow:auto}code{font-size:12px}</style></head><body><h1>Kreyszigg Softbizz — Phase 2: Architecture &amp; Development Plan</h1>
+<p>Status: <strong>AWAITING CLIENT APPROVAL</strong>. This is a design document only. No application code has been written.
+Inputs: approved Phase 1 plan (<code>PLANNING.md</code>) + client change: <strong>Ubuntu typography</strong>.</p>
+<p>Working assumptions for the Phase 1 questions you haven't answered yet. Each can be changed at this gate:
+- <strong>Q1 build environment</strong>: build the approved Next.js (JSX) + Express stack in this workspace and replace the FastAPI/TypeScript starter.
+- <strong>Q3 PRD gaps</strong>: use the defaults proposed in G-3…G-13.
+- <strong>Q4 imagery</strong>: typographic, imagery-light direction until real assets arrive. Team, Portfolio and Testimonials stay hidden while empty.
+- <strong>Q5 logo</strong>: use the supplied files exactly as given, on light surfaces only. In the footer the logo sits on a Warm Ivory plate. A white version needs your approval.</p>
+<hr />
+<h2>1. Key architecture decisions (ADR summary)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Why</th>
+<th>Alternatives rejected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AD-1</td>
+<td><strong>Monorepo, two apps</strong>: <code>web/</code> (Next.js 16, App Router, JS/JSX) and <code>api/</code> (Express 5). A third process, <code>worker</code>, reuses <code>api/</code> code with a different entrypoint.</td>
+<td>Matches PRD §11 (separate apps). Shared code is kept in one repo for one deploy pipeline.</td>
+<td>Next.js API routes (the PRD forbids them as the backend)</td>
+</tr>
+<tr>
+<td>AD-2</td>
+<td><strong>Admin lives inside the Next app at <code>/admin</code></strong>, with its own route group, layout, CSS tokens and theme, set to noindex and rendered client-side.</td>
+<td>One frontend container (PRD §11.2) and shared build tooling, with a completely separate visual system (PRD §8.6).</td>
+<td>A third frontend app (extra container and RAM on the free VM)</td>
+</tr>
+<tr>
+<td>AD-3</td>
+<td><strong>Server-side sessions in MongoDB</strong>, sent as an opaque cookie (<code>ks_sid</code>, HttpOnly, Secure, SameSite=Lax), plus a CSRF double-submit token.</td>
+<td>Needed for single-session logout, idle and absolute expiry, instant revocation on deactivation (§12.1).</td>
+<td>Stateless JWT (can't be revoked per session without a denylist)</td>
+</tr>
+<tr>
+<td>AD-4</td>
+<td><strong>Mongo-backed job queue</strong> (<code>jobs</code> collection) processed by the <code>worker</code> container.</td>
+<td>Provides retry/backoff, dedupe keys and scheduled reminders with no Redis, which saves RAM and cost on the free tier.</td>
+<td>BullMQ + Redis (extra service)</td>
+</tr>
+<tr>
+<td>AD-5</td>
+<td><strong>Socket.IO</strong> for real-time notifications, authenticated with the session cookie and using per-user rooms. Worker → API delivery goes through a lightweight Mongo "outbox" polled every 2 s by the API.</td>
+<td>Works through Nginx + Cloudflare. Does not need Atlas change streams (M0 limits).</td>
+<td>SSE (no bidirectional ack); change streams (tier-dependent)</td>
+</tr>
+<tr>
+<td>AD-6</td>
+<td><strong>Mongoose</strong> ODM + <strong>Zod</strong> validation (plain JS).</td>
+<td>Schema-level indexes and hooks. Zod schemas can be shared with the frontend for identical client/server validation.</td>
+<td>Raw driver (more boilerplate); Joi (cannot share cleanly)</td>
+</tr>
+<tr>
+<td>AD-7</td>
+<td><strong>StorageProvider abstraction</strong> with drivers <code>r2</code> (S3 API) and <code>local</code> (dev/test).</td>
+<td>PRD §11.4 portability; works before R2 credentials exist.</td>
+<td>Direct R2 calls in controllers</td>
+</tr>
+<tr>
+<td>AD-8</td>
+<td><strong>EmailProvider abstraction</strong>, default <code>smtp</code> (nodemailer), plus <code>log</code> driver for dev.</td>
+<td>Existing business email (§7.8); newsletter provider must be configurable (§16.1).</td>
+<td>Hard-wiring a SaaS email API</td>
+</tr>
+<tr>
+<td>AD-9</td>
+<td><strong>CSS Modules + CSS custom properties</strong>, no UI kit on the public site; a small in-house admin component library.</td>
+<td>Avoids the generic template look (PRD §4.2) and keeps the JS bundle small for Core Web Vitals.</td>
+<td>Tailwind/shadcn defaults, MUI (recognisable "AI template" look, heavier)</td>
+</tr>
+<tr>
+<td>AD-10</td>
+<td><strong>Public pages: SSG/ISR</strong> with on-demand revalidation (<code>POST /api/revalidate</code> on the Next side, called by Express after publish, protected by a shared secret).</td>
+<td>SEO + performance (§14), with admin edits live within seconds.</td>
+<td>Full SSR on every request (slower, more VM load)</td>
+</tr>
+<tr>
+<td>AD-11</td>
+<td><strong>Ubuntu font self-hosted</strong> via <code>@fontsource/ubuntu</code> (weights 400, 500, 700 + 400 italic), with <code>font-display: swap</code> and preloading.</td>
+<td>Client decision; Ubuntu Font Licence allows web embedding. Ubuntu has no 600 weight, so "Semibold" roles use <strong>Medium 500</strong>. The supplied wordmark appears to be set in a similar humanist face, which makes the type cohesive.</td>
+<td>Google Fonts CDN (third-party request, privacy)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. Repository &amp; folder structure</h2>
+<pre><code>kreyszigg-softbizz/
+├── web/                         # Next.js 16 — JavaScript/JSX only
+│   ├── app/
+│   │   ├── (public)/            # public route group, brand layout
+│   │   │   ├── layout.jsx       # Header, Footer, WhatsApp FAB, CookieBanner
+│   │   │   ├── page.jsx         # Home
+│   │   │   ├── about/{page.jsx, team/, approach/}
+│   │   │   ├── services/{page.jsx, [slug]/page.jsx}
+│   │   │   ├── hire-developers/{page.jsx, technologies/, models/, [category]/}
+│   │   │   ├── work/{page.jsx, [slug]/page.jsx}
+│   │   │   ├── industries/{page.jsx, [slug]/page.jsx}
+│   │   │   ├── partnerships/page.jsx
+│   │   │   ├── insights/{page.jsx, [slug]/, category/[slug]/, tag/[slug]/}
+│   │   │   ├── careers/{page.jsx, [slug]/page.jsx}
+│   │   │   ├── contact/page.jsx
+│   │   │   ├── privacy/ terms/ cookies/
+│   │   │   └── newsletter/{confirm/, unsubscribe/}
+│   │   ├── admin/               # admin area, separate layout + theme, noindex
+│   │   │   ├── login/ invite/[token]/ reset/[token]/ two-factor/
+│   │   │   ├── (shell)/layout.jsx   # Sidebar, Topbar, NotificationBell, ThemeToggle, IdleTimer
+│   │   │   ├── (shell)/dashboard/  leads/{page.jsx,[id]/}  portfolio/  services/
+│   │   │   ├── (shell)/developer-categories/  insights/  careers/  team/  testimonials/
+│   │   │   ├── (shell)/partnerships/  newsletter/  reports/  users/  settings/  notifications/  profile/
+│   │   ├── api/revalidate/route.js  # ISR hook only (no business logic)
+│   │   ├── sitemap.js  robots.js  not-found.jsx  error.jsx
+│   ├── components/
+│   │   ├── public/   (layout/, sections/, forms/, cards/, media/)
+│   │   ├── admin/    (shell/, data-table/, forms/, widgets/, charts/, editors/)
+│   │   └── shared/   (Button, Field, Dialog, Toast, Icon, VisuallyHidden, Logo)
+│   ├── lib/          api-client.js, seo.js, analytics.js (consent-aware GA4), consent.js,
+│   │                 whatsapp.js, socket.js, validators/ (re-exported shared Zod)
+│   ├── styles/       tokens.public.css, tokens.admin.css, globals.css, typography.css
+│   ├── public/brand/ (supplied logo files, unmodified)
+│   └── next.config.mjs, jsconfig.json, Dockerfile
+├── api/                         # Express 5 — JavaScript
+│   ├── src/
+│   │   ├── app.js  server.js  worker.js
+│   │   ├── config/        env.js (validated env), constants.js, permissions.js
+│   │   ├── db/            connect.js, indexes.js, seed/
+│   │   ├── middleware/    auth.js, authorize.js, csrf.js, rateLimit.js, validate.js,
+│   │   │                  upload.js, error.js, requestId.js, sanitize.js, idempotency.js
+│   │   ├── modules/       one folder per domain:
+│   │   │   auth/ users/ invitations/ sessions/ leads/ notes/ followups/
+│   │   │   notifications/ email/ newsletter/ files/ services/ portfolio/
+│   │   │   devcategories/ blog/ careers/ applications/ team/ testimonials/
+│   │   │   partnerships/ industries/ pages/ settings/ dashboard/ reports/
+│   │   │   backups/ security/ public/
+│   │   │   └─ each: model.js, schema.js (Zod), service.js, controller.js, routes.js
+│   │   ├── providers/     storage/{index,r2,local}.js, email/{index,smtp,log}.js,
+│   │   │                  scanner/{index,clamav,none}.js, images/sharp.js
+│   │   ├── jobs/          queue.js, handlers/{sendEmail, followupReminder, overdueCheck,
+│   │   │                  backup, restoreTest, retentionPurge, cleanup}.js, scheduler.js
+│   │   ├── realtime/      socket.js, outbox.js
+│   │   └── utils/         tokens.js, crypto.js, pagination.js, csv.js, xlsx.js, dates.js
+│   ├── tests/             unit/, integration/ (supertest + mongodb-memory-server), rbac/
+│   └── Dockerfile
+├── shared/                validation schemas + enums used by both apps (lead statuses, types…)
+├── deploy/                docker-compose.yml, docker-compose.dev.yml, nginx/, certbot/,
+│                          scripts/{backup.sh, restore.sh, restore-test.sh}
+├── docs/                  ARCHITECTURE.md, API.md, ENV.md, DEPLOYMENT.md, BACKUP_RESTORE.md,
+│                          SECURITY.md, QA_CHECKLIST.md, CONTENT_GUIDE.md
+└── .env.example  .github/workflows/ci.yml
+</code></pre>
+<p>In this Emergent workspace, <code>web/</code> is served on port 3000 (preview) and <code>api/</code> on port 8001 (<code>/api</code> proxy), with the in-pod MongoDB.</p>
+<hr />
+<h2>3. Component architecture</h2>
+<p><strong>Public (brand system).</strong> Pages are composed from a deliberately varied section library, not one repeated card block:
+<code>HeroEditorial</code> (asymmetric headline + CTA pair), <code>StatementBand</code>, <code>ServiceIndex</code> (numbered typographic index, not cards), <code>SplitFeature</code>, <code>ProcessTimeline</code> (7 stages, horizontal on desktop, vertical on mobile), <code>TechMatrix</code> (grouped taxonomy table), <code>EngagementModelsTable</code>, <code>CaseStudyMosaic</code>, <code>CaseStudyBody</code>, <code>ArticleList</code>, <code>QuoteBlock</code> (only renders authorized testimonials), <code>CTAPanel</code>, <code>FAQAccordion</code>, <code>Breadcrumbs</code>, <code>JsonLd</code>.
+Forms: <code>EnquiryForm</code> (config-driven: project/hiring/partnership/contact), <code>ApplicationForm</code>, <code>NewsletterForm</code>. All share <code>Field</code>, <code>FileDrop</code>, <code>ConsentCheckbox</code>, <code>FormStatus</code> (aria-live), plus honeypot and idempotency key.
+Global: <code>Header</code> + <code>MegaMenu</code> + <code>MobileDrawer</code>, <code>Footer</code>, <code>WhatsAppButton</code> (contextual message map), <code>MeetingCTA</code> (respects the settings toggle), <code>CookieBanner</code> + <code>CookiePreferences</code>.</p>
+<p><strong>Admin (separate system).</strong> The <code>AdminShell</code> contains Sidebar (filtered by permissions), Topbar, <code>NotificationBell</code>, <code>ThemeToggle</code> and <code>IdleTimer</code>.
+Reusable building blocks: <code>DataTable</code> (server pagination/sort/filter/search, column config, bulk actions, export), <code>RecordForm</code> (Zod-driven), <code>RichTextEditor</code> (Tiptap, output sanitized server-side), <code>MediaPicker</code>, <code>SEOFields</code>, <code>PublishControls</code> (draft/preview/publish/schedule), <code>ConfirmDialog</code>, <code>EmptyState</code>/<code>ErrorState</code>/<code>Skeleton</code>, <code>StatusBadge</code>, <code>DateRangeFilter</code>.
+Dashboard: a <code>WidgetGrid</code> (dnd-kit, keyboard-accessible drag + "move up/down" fallback) rendering registered widgets: <code>KpiWidget</code>, <code>DistributionChart</code>, <code>TrendChart</code>, <code>RecentLeads</code>, <code>UpcomingFollowups</code>, <code>WebsiteAnalytics</code>, <code>SubscribersWidget</code>, <code>ActivityWidget</code>. Charts use Recharts.</p>
+<p>Data fetching: TanStack Query in admin; server-side <code>fetch</code> with ISR tags on the public site.</p>
+<hr />
+<h2>4. API architecture (<code>/api/v1</code>)</h2>
+<p>Conventions: JSON; envelope <code>{ data, meta }</code> / errors <code>{ error: { code, message, fields? } }</code>; list query <code>?page&amp;limit(≤100)&amp;sort=-createdAt&amp;q&amp;filter[...]</code>; Zod validation on body/query/params; <code>requestId</code> on every response; rate limits per route group. State-changing admin routes require the session + CSRF header.</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Public endpoints</th>
+<th>Admin endpoints (permission)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Auth</td>
+<td>—</td>
+<td><code>POST /auth/login</code>, <code>/auth/2fa/verify</code>, <code>/auth/logout</code>, <code>GET /auth/me</code>, <code>POST /auth/password/forgot</code>, <code>/auth/password/reset</code>, <code>GET/POST /auth/invitations/:token</code> (accept), <code>GET /auth/sessions</code>, <code>DELETE /auth/sessions/:id</code>, <code>POST /auth/2fa/setup|enable|disable</code></td>
+</tr>
+<tr>
+<td>Users</td>
+<td>—</td>
+<td><code>GET/POST /admin/users</code> (<code>users.manage</code>), <code>PATCH /admin/users/:id</code>, <code>POST /admin/users/:id/deactivate|reactivate</code>, <code>GET /admin/users/:id/sessions</code>, <code>DELETE …/sessions/:sid</code>; <code>GET/POST /admin/invitations</code>, <code>POST …/:id/resend</code>, <code>POST …/:id/revoke</code></td>
+</tr>
+<tr>
+<td>Leads</td>
+<td><code>POST /public/enquiries</code> (type-specific schema, multipart)</td>
+<td><code>GET /admin/leads</code> (scope-filtered), <code>GET/PATCH /admin/leads/:id</code>, <code>POST …/:id/assign</code> (<code>leads.assign</code>), <code>GET/POST …/:id/notes</code>, <code>GET/POST/PATCH …/:id/followups</code>, <code>GET /admin/followups?view=upcoming|overdue</code>, <code>GET /admin/leads/export?format=csv|xlsx</code> (<code>leads.export</code>)</td>
+</tr>
+<tr>
+<td>Files</td>
+<td>—</td>
+<td><code>GET /admin/files/:id/download</code> (RBAC check, returns 60-second signed URL), <code>POST /admin/media</code> (public uploads), <code>POST /admin/files/:id/release</code> (quarantine)</td>
+</tr>
+<tr>
+<td>Content (services, process, devcategories, technologies, models, levels, industries, portfolio, blog, categories, tags, team, testimonials, partnerships, pages)</td>
+<td><code>GET /public/&lt;resource&gt;</code> and <code>/public/&lt;resource&gt;/:slug</code> (published only), <code>GET /public/search?q=</code> (insights)</td>
+<td><code>GET/POST /admin/&lt;resource&gt;</code>, <code>GET/PATCH/DELETE /admin/&lt;resource&gt;/:id</code>, <code>POST …/:id/publish|unpublish</code>, <code>GET …/:id/preview-token</code>, <code>PATCH /admin/&lt;resource&gt;/reorder</code> (<code>content.manage</code>)</td>
+</tr>
+<tr>
+<td>Careers</td>
+<td><code>GET /public/jobs</code>, <code>GET /public/jobs/:slug</code>, <code>POST /public/jobs/:id/apply</code></td>
+<td><code>/admin/jobs</code> CRUD + archive; <code>/admin/applications</code> list/detail/status (<code>applications.manage</code>)</td>
+</tr>
+<tr>
+<td>Newsletter</td>
+<td><code>POST /public/newsletter/subscribe</code>, <code>GET /public/newsletter/confirm?token=</code>, <code>POST /public/newsletter/unsubscribe</code></td>
+<td><code>GET /admin/subscribers</code>, <code>PATCH …/:id</code>, <code>GET …/export</code> (<code>newsletter.manage</code>)</td>
+</tr>
+<tr>
+<td>Notifications</td>
+<td>—</td>
+<td><code>GET /admin/notifications</code>, <code>GET …/unread-count</code>, <code>POST …/:id/read</code>, <code>POST …/read-all</code>, <code>GET/PUT /admin/me/notification-preferences</code>; SA: <code>GET/PUT /admin/notification-rules</code>, <code>GET/PUT /admin/email-templates/:event</code>, <code>GET /admin/email-deliveries</code>, <code>POST /admin/settings/test-email</code></td>
+</tr>
+<tr>
+<td>Dashboard / Reports</td>
+<td>—</td>
+<td><code>GET /admin/dashboard/widgets?from&amp;to</code>, <code>GET/PUT/DELETE /admin/me/dashboard-layout</code>, <code>GET /admin/reports/*</code>, <code>…/export</code> (<code>reports.view</code>)</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><code>GET /public/settings</code> (public-safe subset only)</td>
+<td><code>GET/PUT /admin/settings/:group</code> (<code>settings.manage</code>)</td>
+</tr>
+<tr>
+<td>Tracking</td>
+<td><code>POST /public/events</code> (whatsapp_click, meeting_click — no PII, consent-aware)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Backups</td>
+<td>—</td>
+<td><code>GET /admin/backups</code>, <code>POST /admin/backups/run</code> (Super Admin only)</td>
+</tr>
+<tr>
+<td>DSR / privacy</td>
+<td>—</td>
+<td><code>GET /admin/privacy/lookup?email=</code>, <code>POST /admin/privacy/export|anonymize</code> (Super Admin only)</td>
+</tr>
+</tbody>
+</table>
+<p>A full OpenAPI-style reference will be delivered as <code>docs/API.md</code> during build.</p>
+<hr />
+<h2>5. MongoDB collections &amp; relationships</h2>
+<p>All documents use a string <code>_id</code> (UUID v4), <code>createdAt</code>/<code>updatedAt</code> (UTC) and soft-delete where relevant. Arrows show references.</p>
+<table>
+<thead>
+<tr>
+<th>Collection</th>
+<th>Key fields</th>
+<th>Relations / indexes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>users</code></td>
+<td>name, email(unique, lowercased), role(<code>super_admin</code>/<code>admin</code>/<code>team_member</code>), grants[], status(<code>invited</code>/<code>active</code>/<code>deactivated</code>), passwordHash(argon2id), twoFactor{enabled, secretEnc, recoveryHashes[]}, failedLogins, lockedUntil, prefs{theme, emailPrefs{event:bool}}, lastLoginAt</td>
+<td>email unique</td>
+</tr>
+<tr>
+<td><code>invitations</code></td>
+<td>email, role, grants, tokenHash, expiresAt, invitedBy→users, status(<code>pending</code>/<code>accepted</code>/<code>revoked</code>/<code>expired</code>)</td>
+<td>tokenHash unique; TTL cleanup</td>
+</tr>
+<tr>
+<td><code>sessions</code></td>
+<td>userId→users, idHash, ip(truncated), userAgent, createdAt, lastSeenAt, expiresAt, revokedAt</td>
+<td>idHash unique; TTL on expiresAt</td>
+</tr>
+<tr>
+<td><code>authTokens</code></td>
+<td>userId, type(<code>reset</code>/<code>2fa_challenge</code>), tokenHash, expiresAt, usedAt</td>
+<td>TTL</td>
+</tr>
+<tr>
+<td><code>leads</code></td>
+<td>type(<code>project</code>/<code>hiring</code>/<code>partnership</code>/<code>contact</code>), status(6), contact{name,email,company,website}, payload{…type-specific}, attachments[]→fileAssets, source{utm, referrer, page, cta}, consent{version, at}, assigneeId→users, nextFollowUpAt, idempotencyKey, spamScore</td>
+<td>idx: status+createdAt, type+createdAt, assigneeId+status, nextFollowUpAt, text(name,email,company); idempotencyKey unique sparse</td>
+</tr>
+<tr>
+<td><code>leadNotes</code></td>
+<td>leadId→leads, authorId→users, body</td>
+<td>leadId+createdAt</td>
+</tr>
+<tr>
+<td><code>leadEvents</code></td>
+<td>leadId, actorId, kind(<code>status</code>/<code>assign</code>/<code>followup</code>/<code>created</code>), from, to</td>
+<td>operational history for the lead record (not a global audit log)</td>
+</tr>
+<tr>
+<td><code>followUps</code></td>
+<td>leadId→leads, ownerId→users, dueAt, note, status(<code>open</code>/<code>done</code>/<code>cancelled</code>), remindedUpcomingAt, remindedOverdueAt</td>
+<td>dueAt+status; ownerId</td>
+</tr>
+<tr>
+<td><code>notifications</code></td>
+<td>recipientId→users, event(10 enum), title, body, ref{type,id}, readAt, dedupeKey</td>
+<td>recipientId+readAt+createdAt; (recipientId+dedupeKey) unique</td>
+</tr>
+<tr>
+<td><code>notificationRules</code></td>
+<td>event, inApp{roles[]}, email{enabledByDefault, userCanOptOut, userCanOptIn, recipientsMode, extraAddresses[]}</td>
+<td>event unique</td>
+</tr>
+<tr>
+<td><code>emailTemplates</code></td>
+<td>event, subject, html, text, variables[], updatedBy</td>
+<td>event unique</td>
+</tr>
+<tr>
+<td><code>emailDeliveries</code></td>
+<td>event, templateVersion, to(masked in UI), providerMessageId, status(<code>queued</code>/<code>sending</code>/<code>sent</code>/<code>retrying</code>/<code>failed</code>), attempts, lastError{code, message(sanitised)}, dedupeKey, nextAttemptAt</td>
+<td>dedupeKey unique; status+nextAttemptAt</td>
+</tr>
+<tr>
+<td><code>jobs</code></td>
+<td>type, payload, status, attempts, maxAttempts, runAt, lockedAt, lockedBy, dedupeKey, lastError</td>
+<td>status+runAt; dedupeKey unique sparse</td>
+</tr>
+<tr>
+<td><code>outbox</code></td>
+<td>userIds[], event, data, deliveredAt</td>
+<td>TTL 1h</td>
+</tr>
+<tr>
+<td><code>services</code></td>
+<td>name, slug, category(mega-menu group), summary, sections[], capabilities[], priority, order, seo{}, status, isPlaceholder</td>
+<td>slug unique</td>
+</tr>
+<tr>
+<td><code>processSteps</code></td>
+<td>order, title, description, appliesTo[]</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>devCategories</code></td>
+<td>name, slug, summary, skills[], technologyIds[]→technologies, seo, status</td>
+<td>slug unique</td>
+</tr>
+<tr>
+<td><code>technologies</code></td>
+<td>name, group(frontend/backend/mobile/database/cloud/other), order</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>engagementModels</code>, <code>experienceLevels</code>, <code>hiringSteps</code></td>
+<td>name, description, order (levels: yearsMin/Max)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>industries</code></td>
+<td>name, slug, problems[], solutions[], relatedServiceIds[], seo, status</td>
+<td>slug unique</td>
+</tr>
+<tr>
+<td><code>portfolioProjects</code></td>
+<td>title, slug, industryId→industries, overview, challenge, approach, solution, technologyIds[], coverImage→fileAssets, gallery[]→fileAssets, results[]{text, verified}, testimonialId→testimonials, confidentiality(<code>public</code>/<code>anonymized</code>/<code>confidential</code>), isDemo, status, seo</td>
+<td>slug unique; status+industryId</td>
+</tr>
+<tr>
+<td><code>testimonials</code></td>
+<td>quote, personName, role, company, permission{granted, evidenceNote, date, approvedBy}, status</td>
+<td>publish blocked unless permission.granted</td>
+</tr>
+<tr>
+<td><code>teamMembers</code></td>
+<td>name, title, bio, photo→fileAssets, links, isFounder, order, verified, status</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>partnershipTypes</code>, <code>partners</code></td>
+<td>name, description, order / partner name, logo, url, authorizedAt, status</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>blogPosts</code></td>
+<td>title, slug, excerpt, body(sanitised HTML), coverImage, authorId→teamMembers, categoryIds[], tagIds[], featured, status(<code>draft</code>/<code>scheduled</code>/<code>published</code>), publishAt, readingMinutes, seo</td>
+<td>slug unique; status+publishAt; text index</td>
+</tr>
+<tr>
+<td><code>blogCategories</code>, <code>tags</code></td>
+<td>name, slug</td>
+<td>slug unique</td>
+</tr>
+<tr>
+<td><code>jobOpenings</code></td>
+<td>title, slug, description, employmentType, experience, location, status(<code>draft</code>/<code>open</code>/<code>closed</code>/<code>archived</code>), publishedAt, closedAt</td>
+<td>slug unique</td>
+</tr>
+<tr>
+<td><code>applications</code></td>
+<td>jobId→jobOpenings, applicant{name,email,phone,links}, coverNote, cvFileId→fileAssets, consent, status(New/Reviewing/Shortlisted/Interview/Offered/Hired/Rejected)</td>
+<td>jobId+status</td>
+</tr>
+<tr>
+<td><code>newsletterSubscribers</code></td>
+<td>email(unique), status(<code>pending</code>/<code>confirmed</code>/<code>unsubscribed</code>), confirmTokenHash, unsubscribeToken, consent{source, page, version, at, ipHash}, confirmedAt, unsubscribedAt</td>
+<td>email unique</td>
+</tr>
+<tr>
+<td><code>fileAssets</code></td>
+<td>storageKey, bucket(<code>public</code>/<code>private</code>), originalName, mime, size, sha256, visibility, owner{type,id}, scan{state(<code>pending</code>/<code>clean</code>/<code>infected</code>/<code>unscanned</code>), at}, variants[] (public images)</td>
+<td>owner.type+owner.id</td>
+</tr>
+<tr>
+<td><code>contentPages</code></td>
+<td>key(<code>about-story</code>, <code>about-approach</code>, <code>privacy</code>, <code>terms</code>, <code>cookies</code>, <code>careers-culture</code>, <code>partnerships</code>), sections[], version, status, seo</td>
+<td>key unique</td>
+</tr>
+<tr>
+<td><code>websiteSettings</code></td>
+<td>single document grouped as: contact, whatsapp, meeting, social, emailRouting, ack, analytics, uploads, security, notifications, backups, features</td>
+<td>singleton</td>
+</tr>
+<tr>
+<td><code>dashboardPreferences</code></td>
+<td>userId→users(unique), widgets[{id, visible, order, size}]</td>
+<td>userId unique</td>
+</tr>
+<tr>
+<td><code>securityEvents</code></td>
+<td>kind(login_success/failure, lockout, password_reset, invite_sent/accepted/revoked, role_change, user_deactivated, 2fa_change, session_revoked), userId, ip(truncated), meta</td>
+<td>createdAt; TTL 180 days (operational security record only)</td>
+</tr>
+<tr>
+<td><code>trackingEvents</code></td>
+<td>kind(whatsapp_click/meeting_click/form_submit), page, context, day</td>
+<td>aggregate counts only, no PII</td>
+</tr>
+<tr>
+<td><code>backupJobs</code></td>
+<td>trigger(scheduled/manual), startedAt, endedAt, status, objectKey, sizeBytes, sha256, retentionClass(daily/weekly), verifiedAt, error</td>
+<td>createdAt</td>
+</tr>
+<tr>
+<td><code>consentRecords</code></td>
+<td>subjectType, subjectId, policyKey, version, granted, at</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>6. Authentication &amp; authorization</h2>
+<ul>
+<li><strong>Login flow</strong>:</li>
+<li>Rate limit (IP + email) → constant-time check → argon2id verify.</li>
+<li>On failure, increment <code>failedLogins</code>. 5 failures → <code>lockedUntil = now + 15 min</code>, a security event, and notification event #10.</li>
+<li>If 2FA is enabled or required, return a short-lived challenge → TOTP or recovery code.</li>
+<li>Create the session, rotate the cookie, and record a security event.</li>
+<li><strong>Session policy</strong>: idle timeout (default 30 min; server slides <code>lastSeenAt</code>, client <code>IdleTimer</code> warns at 2 min) and absolute timeout (12 h). Sessions are revoked on deactivation, password change or role change (except the current session).</li>
+<li><strong>Invitations</strong>: Super Admin creates → 32-byte random token (only the SHA-256 hash is stored) → email link valid 72 h → invitee sets a policy-compliant password → user becomes active. Resend issues a new token and invalidates the old one. Revoke marks it revoked.</li>
+<li><strong>Password reset</strong>: always responds "if the account exists…" (prevents finding out which emails have accounts). The token is valid 30 min and single-use. A successful reset revokes all sessions.</li>
+<li><strong>RBAC</strong>: <code>config/permissions.js</code> maps roles to permission sets. <code>authorize('leads.export')</code> middleware checks role permissions plus per-user <code>grants</code>, and Super Admin-only permissions can't be granted to a Team Member.</li>
+<li><strong>Record-level scope</strong>: <code>leadScope(user)</code> returns <code>{}</code> for Admin+ and <code>{ assigneeId: user._id }</code> for Team Members. It is applied in every lead/note/follow-up/file query. Out-of-scope requests return 404, so the record's existence isn't revealed.</li>
+<li><strong>Field-level rules</strong>: Team Members may only change <code>status</code> and follow-ups, and add notes. Any other field in the body → 403.</li>
+<li>Notification click-through is re-authorized when the target record loads, and file downloads are re-authorized before a URL is signed.</li>
+</ul>
+<hr />
+<h2>7. File upload &amp; storage</h2>
+<p>Flow: <code>multer</code> (memory, size cap from settings) → extension allow-list + magic-byte check (<code>file-type</code>) + MIME match → safe key <code>private/leads/2026/05/&lt;uuid&gt;.&lt;ext&gt;</code> → upload to R2 → <code>fileAssets</code> record with <code>scan.state=pending</code> → <code>scanFile</code> job (ClamAV if enabled; otherwise <code>unscanned</code>). Infected files are moved to <code>quarantine/</code> and trigger event #10.</p>
+<ul>
+<li><strong>Private bucket</strong>: no public access. Downloads only via the API, which issues a 60-second presigned GET with <code>Content-Disposition: attachment</code>.</li>
+<li><strong>Public bucket</strong> (CMS media): <code>sharp</code> generates WebP/AVIF variants (480/960/1600w) and strips EXIF. Files are served from the R2 public domain or a custom subdomain, with alt text required.</li>
+<li><strong>Defaults</strong> (editable): attachments PDF/DOC/DOCX/PPT/PPTX/XLS/XLSX/PNG/JPG/ZIP up to 10 MB; CVs PDF/DOC/DOCX up to 5 MB; images JPG/PNG/WebP up to 8 MB.</li>
+</ul>
+<hr />
+<h2>8. Notification &amp; email architecture</h2>
+<pre><code>domain event (e.g. lead.created)
+   └─&gt; notify(event, ref, context)
+         ├─ resolve recipients: rules.inApp roles ∩ record scope (Team Members only if assigned)
+         ├─ insert notifications (unique recipientId+dedupeKey)  → outbox → Socket.IO room user:&lt;id&gt;
+         └─ for each recipient where email allowed (SA rule ∧ user pref within limits)
+               enqueue job sendEmail (dedupeKey = event:refId:recipient[:occurrence])
+worker: sendEmail → render template (Handlebars, escaped vars) → provider.send
+        success → delivery.status=sent, providerMessageId
+        failure → retrying, backoff 1m,5m,15m,1h,6h (max 5) → failed + event #10 if repeated
+</code></pre>
+<ul>
+<li><strong>Dedupe keys</strong>: e.g. <code>lead.created:&lt;leadId&gt;:&lt;userId&gt;</code>, <code>followup.upcoming:&lt;followUpId&gt;:&lt;dueAtISO&gt;</code>, <code>followup.overdue:&lt;followUpId&gt;:&lt;dueAtISO&gt;</code>. Rescheduling a follow-up creates a new occurrence key.</li>
+<li><strong>Scheduler</strong> (worker, every minute, timezone from settings): finds open follow-ups with <code>dueAt - leadTime ≤ now</code> and no <code>remindedUpcomingAt</code>; marks them atomically, then notifies. Overdue works the same way at <code>dueAt + grace</code>.</li>
+<li><strong>Events → default recipients</strong>:</li>
+<li>
+<h1>1–4 (new enquiries): Super Admin + Admin, plus the routed email alias.</h1>
+</li>
+<li>
+<h1>5 (job application): Admin+ with <code>applications.manage</code>.</h1>
+</li>
+<li>
+<h1>6 (newsletter subscription): Admin+, in-app only by default.</h1>
+</li>
+<li>
+<h1>7 (lead assigned): the assignee.</h1>
+</li>
+<li>
+<h1>8–9 (follow-ups): follow-up owner + assignee.</h1>
+</li>
+<li>
+<h1>10 (admin/security activity): Super Admin.</h1>
+</li>
+<li>All of these are editable by Super Admin.</li>
+<li><strong>Templates</strong>: per event (subject/html/text) with a variable whitelist, preview with sample data, and reset to default. System templates (invitation, password reset, newsletter confirmation, acknowledgement) can also be edited.</li>
+<li><strong>Logs</strong>: <code>emailDeliveries</code> stores status, attempts, error code and sanitized message. No message bodies or secrets. Recipients are partially masked in the UI.</li>
+<li><strong>Test email</strong>: Settings → Email → "Send test" sends to the address entered, synchronously, and shows the provider response or error.</li>
+</ul>
+<hr />
+<h2>9. Admin dashboard architecture</h2>
+<p><code>GET /admin/dashboard/widgets?from&amp;to&amp;tz</code> returns all widget datasets in one call, computed with Mongo aggregation pipelines and scoped by role (a Team Member's widgets count only their assigned leads; subscriber and activity widgets are hidden without permission).
+Layout is stored in <code>dashboardPreferences</code> (order, visibility, size) and saved on change. "Restore default" deletes the user's layout document.
+Drill-down: each KPI or chart segment links to <code>/admin/leads?status=…&amp;from=…&amp;to=…</code>.
+"Website analytics" widget: first-party counts from <code>trackingEvents</code> + lead sources. A GA4 Data API panel is added if credentials are supplied.</p>
+<hr />
+<h2>10. Environment configuration (summary — full list in <code>docs/ENV.md</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Used by</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NODE_ENV</code>, <code>PUBLIC_SITE_URL</code> (<code>https://softbizz.kreyszigg.com</code>), <code>API_PUBLIC_URL</code></td>
+<td>web, api</td>
+<td>canonical URLs</td>
+</tr>
+<tr>
+<td><code>MONGO_URL</code>, <code>MONGO_DB</code></td>
+<td>api, worker</td>
+<td>Atlas SRV string in prod</td>
+</tr>
+<tr>
+<td><code>SESSION_SECRET</code>, <code>CSRF_SECRET</code>, <code>ENCRYPTION_KEY</code> (2FA secrets at rest), <code>REVALIDATE_SECRET</code></td>
+<td>api, web</td>
+<td>32+ byte random</td>
+</tr>
+<tr>
+<td><code>CORS_ORIGINS</code>, <code>TRUST_PROXY</code></td>
+<td>api</td>
+<td></td>
+</tr>
+<tr>
+<td><code>STORAGE_DRIVER</code> (<code>r2</code>/<code>local</code>), <code>R2_ACCOUNT_ID</code>, <code>R2_ACCESS_KEY_ID</code>, <code>R2_SECRET_ACCESS_KEY</code>, <code>R2_BUCKET_PUBLIC</code>, <code>R2_BUCKET_PRIVATE</code>, <code>R2_PUBLIC_BASE_URL</code></td>
+<td>api, worker</td>
+<td></td>
+</tr>
+<tr>
+<td><code>EMAIL_DRIVER</code> (<code>smtp</code>/<code>log</code>), <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_SECURE</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>EMAIL_FROM</code></td>
+<td>worker, api</td>
+<td>never exposed to the frontend</td>
+</tr>
+<tr>
+<td><code>SCANNER_DRIVER</code> (<code>clamav</code>/<code>none</code>), <code>CLAMAV_HOST</code></td>
+<td>worker</td>
+<td></td>
+</tr>
+<tr>
+<td><code>BACKUP_R2_BUCKET</code>, <code>BACKUP_R2_ACCESS_KEY_ID</code>, <code>BACKUP_R2_SECRET_ACCESS_KEY</code>, <code>BACKUP_ENCRYPTION_PUBLIC_KEY</code></td>
+<td>worker</td>
+<td>separate credentials; private key kept offline by the custodian</td>
+</tr>
+<tr>
+<td><code>TURNSTILE_SITE_KEY</code> / <code>TURNSTILE_SECRET</code> (optional)</td>
+<td>web / api</td>
+<td>optional extra spam protection</td>
+</tr>
+<tr>
+<td><code>NEXT_PUBLIC_*</code></td>
+<td>web</td>
+<td>only non-secret values; GA4 ID is read from public settings at runtime</td>
+</tr>
+<tr>
+<td><code>SEED_SUPERADMIN_EMAIL</code></td>
+<td>api (one-time CLI)</td>
+<td>first Super Admin is created with a CLI command that emails an invitation, not via a public form</td>
+</tr>
+</tbody>
+</table>
+<p>Business-level settings (WhatsApp number, meeting URLs, social links, routing, analytics IDs, policies) live in <code>websiteSettings</code> and are editable in admin, not in env.</p>
+<hr />
+<h2>11. Deployment architecture</h2>
+<ul>
+<li><strong>docker-compose.yml</strong>: <code>nginx</code> (ports 80/443), <code>web</code> (Next standalone, port 3000), <code>api</code> (port 8001), <code>worker</code>, optional <code>clamav</code>, <code>certbot</code>. All are on an internal network; only nginx is exposed. Containers run as non-root with healthchecks and <code>restart: unless-stopped</code>.</li>
+<li><strong>Nginx</strong>: TLS (Let's Encrypt), HTTP→HTTPS redirect, HSTS, gzip + brotli, cache headers for <code>/_next/static</code> (immutable), <code>/api/</code> → api, <code>/socket.io/</code> → api (WebSocket upgrade), everything else → web, <code>client_max_body_size 12m</code>, real-IP from Cloudflare.</li>
+<li><strong>DNS</strong>: one record only, <code>softbizz</code> (A → VM IP) in Cloudflare. The root domain, MX, SPF, DKIM and DMARC records are not touched. The runbook includes a before/after DNS export check.</li>
+<li><strong>CI</strong> (GitHub Actions): lint, tests, a "no .ts/.tsx" guard, then building images. Deploy = SSH pull + <code>docker compose up -d</code> with rollback to the previous image tag.</li>
+<li><strong>Free-tier limits</strong> (to verify at launch):</li>
+<li>OCI Ampere capacity may be unavailable; the AMD micro VM (1 GB) cannot run ClamAV.</li>
+<li>Atlas M0: 512 MB storage and no managed backups.</li>
+<li>R2: 10 GB storage and 1M Class A operations per month free.</li>
+<li>SMTP sending quotas from your provider.</li>
+</ul>
+<hr />
+<h2>12. Build sequence after approval</h2>
+<p>Phase 3 (design system + Home, a Service detail page, Hire Developers, and admin Dashboard/Leads screens in both themes) → your visual approval → Phases 4a–4f per the plan, each ending with the Rule 13 report.</p></body></html>

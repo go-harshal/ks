@@ -1,0 +1,77 @@
+.header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(245, 242, 235, 0.96);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--t-med) ease, background-color var(--t-med) ease;
+}
+.scrolled { border-bottom-color: var(--line); background: rgba(245, 242, 235, 0.985); }
+.bar { display: flex; align-items: center; gap: 28px; height: var(--header-h); transition: height var(--t-med) var(--ease); }
+.scrolled .bar { height: 64px; }
+.logo { height: 58px; flex-shrink: 0; transition: height var(--t-med) var(--ease); }
+.scrolled .logo { height: 48px; }
+
+.nav { margin-left: auto; }
+.navList { display: flex; align-items: center; gap: 4px; }
+.navLink {
+  position: relative; display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 12px; font-size: 0.94rem; font-weight: var(--w-medium); color: var(--slate);
+  background: none; border: 0; cursor: pointer;
+}
+.navLink::after {
+  content: ''; position: absolute; left: 12px; right: 12px; bottom: 4px; height: 1px;
+  background: var(--copper); transform: scaleX(0); transform-origin: left; transition: transform var(--t-med) var(--ease);
+}
+.navLink:hover::after, .active::after { transform: scaleX(1); }
+.caret { width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform var(--t-fast) ease; }
+.caretOpen { transform: translateY(1px) rotate(-135deg); }
+.cta { flex-shrink: 0; }
+
+.megaHost { position: static; }
+.mega {
+  position: absolute; left: 0; right: 0; top: 100%;
+  background: var(--white); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  box-shadow: 0 24px 48px -24px rgba(23, 35, 47, 0.18);
+  opacity: 0; visibility: hidden; transform: translateY(-6px);
+  transition: opacity var(--t-fast) ease, transform var(--t-med) var(--ease), visibility 0s linear var(--t-fast);
+}
+.megaOpen { opacity: 1; visibility: visible; transform: none; transition: opacity var(--t-fast) ease, transform var(--t-med) var(--ease); }
+.megaInner {
+  max-width: var(--container); margin: 0 auto; padding: 40px var(--gutter) 44px;
+  display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr 1fr; gap: 36px;
+}
+.megaIntro { display: grid; align-content: start; gap: 14px; padding-right: 16px; border-right: 1px solid var(--line); }
+.megaLead { color: var(--slate-500); font-size: 0.95rem; }
+.megaTitle { font-size: var(--fs-overline); letter-spacing: 0.14em; text-transform: uppercase; color: var(--copper-ink); font-weight: var(--w-medium); margin-bottom: 14px; }
+.megaCol ul { display: grid; gap: 2px; }
+.megaLink { display: block; padding: 6px 0; font-size: 0.95rem; color: var(--slate); transition: color var(--t-fast) ease, transform var(--t-fast) ease; }
+.megaLink:hover { color: var(--copper-ink); transform: translateX(3px); }
+.megaIndustries { padding-left: 24px; border-left: 1px solid var(--line); }
+
+.burger { display: none; margin-left: auto; width: 44px; height: 44px; background: none; border: 1px solid var(--line); cursor: pointer; align-items: center; justify-content: center; }
+.burgerLines, .burgerLines::before, .burgerLines::after { display: block; width: 18px; height: 1.5px; background: var(--slate); position: relative; transition: transform var(--t-med) var(--ease), background-color var(--t-fast) ease; }
+.burgerLines::before, .burgerLines::after { content: ''; position: absolute; left: 0; }
+.burgerLines::before { top: -6px; }
+.burgerLines::after { top: 6px; }
+.burgerX { background: transparent; }
+.burgerX::before { transform: translateY(6px) rotate(45deg); }
+.burgerX::after { transform: translateY(-6px) rotate(-45deg); }
+
+.drawer {
+  position: fixed; inset: 64px 0 0 0; background: var(--ivory); overflow-y: auto;
+  padding: 24px var(--gutter) 40px; display: grid; gap: 28px; align-content: start;
+  transform: translateX(100%); transition: transform var(--t-med) var(--ease);
+}
+.drawerOpen { transform: none; }
+.drawer[hidden] { display: none; }
+.drawerList { display: grid; border-top: 1px solid var(--line); }
+.drawerLink { display: block; padding: 16px 0; font-size: 1.35rem; font-weight: var(--w-medium); border-bottom: 1px solid var(--line); }
+.drawerServices { display: grid; gap: 18px; }
+.drawerSub { display: block; padding: 7px 0; color: var(--slate-500); }
+
+@media (max-width: 1180px) {
+  .nav, .cta { display: none; }
+  .burger { display: inline-flex; }
+  .bar { height: 64px; }
+  .logo { height: 48px; }
+}
+@media (min-width: 1181px) { .drawer { display: none; } }

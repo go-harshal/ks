@@ -1,0 +1,12 @@
+.band { padding-block: var(--section-y); position: relative; overflow: hidden; border-bottom: 1px solid var(--slate-700); }
+.band::after {
+  content: ''; position: absolute; right: -8vw; top: -30%; width: 46vw; height: 160%;
+  border-left: 1px solid var(--slate-700); transform: skewX(-24deg); pointer-events: none;
+}
+.inner { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(32px, 6vw, 96px); align-items: end; position: relative; z-index: 1; }
+.copy { display: grid; gap: 20px; }
+.title { font-size: var(--fs-h1); max-width: 16ch; }
+.side { display: grid; gap: 28px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.meeting { color: var(--ivory); width: fit-content; }
+@media (max-width: 900px) { .inner { grid-template-columns: 1fr; } }

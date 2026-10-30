@@ -1,0 +1,2335 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=robots content=noindex><title>Kreyszigg Softbizz - Phase 1 Planning (Approved)</title><style>body{font-family:Ubuntu,Segoe UI,Arial,sans-serif;max-width:1200px;margin:40px auto;padding:0 24px;color:#17232F;background:#F5F2EB;line-height:1.5}table{border-collapse:collapse;width:100%;font-size:13px;margin:12px 0;background:#fff}td,th{border:1px solid #d8d2c6;padding:6px 8px;vertical-align:top;text-align:left}th{background:#17232F;color:#fff}h2{border-bottom:2px solid #A56F4E;padding-bottom:4px;margin-top:40px}pre{background:#17232F;color:#F5F2EB;padding:16px;overflow:auto}code{font-size:12px}</style></head><body><h1>Kreyszigg Softbizz — Phase 1: PRD Understanding &amp; Planning</h1>
+<p>Status: <strong>APPROVED by client</strong> (Phase 1). Change on approval: typography is <strong>Ubuntu</strong> instead of Segoe UI (supersedes PRD §4.1 typography and resolves G-2). No application code has been written.
+Source of truth: <code>Kreyszigg_Softbizz_Website_PRD.docx</code> (read in full: Sections 1–18, Appendices A–C).</p>
+<hr />
+<h2>A. Understanding of Kreyszigg Softbizz and its business objectives</h2>
+<p>Kreyszigg Softbizz is a software development and technology talent company. It serves startups, SMBs, other software companies/agencies, digital &amp; marketing agencies, e-commerce businesses, international businesses and individual entrepreneurs, worldwide.</p>
+<p><strong>It makes money in two ways (both equally core):</strong></p>
+<ol>
+<li><strong>Software development services (project delivery)</strong>. Clients bring a product or business problem. Kreyszigg Softbizz delivers it end to end through a 7-stage process (Discovery → Planning &amp; Architecture → UI/UX → Agile Development → QA → Deployment → Maintenance). There are 11 services; the top priorities are <strong>Mobile App Development</strong> and <strong>Web Application Development</strong>. There is no public pricing: every engagement starts with "Request a Quote".</li>
+<li><strong>Developer hiring / staff augmentation</strong>. Clients hire individual developers or whole teams. They choose from 10 developer categories, a technology list (frontend, backend, mobile, database, cloud, other), 4 experience levels (guidelines only, not availability claims) and 6 engagement models (monthly dedicated, dedicated team, hourly, part-time, fixed-price, contract-to-hire). Hiring follows a 6-step process.</li>
+</ol>
+<p>There is also a third, smaller path: <strong>agency and technology partnerships</strong> (white-label/collaboration).</p>
+<p><strong>Business objectives:</strong> qualified project leads, qualified hiring leads, partnership leads, brand credibility, and organic visibility (SEO + insights).
+<strong>Operating principle:</strong> <em>credibility over hype</em>. Nothing fabricated: no fake clients, numbers, testimonials, logos, awards or availability claims. Demo content must be clearly labelled and unpublished by default.</p>
+<p>The product is a <strong>public, SEO-first website</strong> plus a <strong>secure admin platform with a lightweight built-in CRM</strong>. It is meant to run on free tiers first (OCI + Atlas + Cloudflare) and stay portable to paid infrastructure.</p>
+<hr />
+<h2>B. Approved scope summary</h2>
+<h3>B1. Sitemap / public pages</h3>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Pages</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Home</td>
+<td><code>/</code> — Hero (project CTA + hiring CTA), trust/credibility (verified only), services overview, featured work, hire-developers teaser, why us (evidence-based), 7-stage process, testimonials (authorized only), latest insights, final CTA</td>
+</tr>
+<tr>
+<td>About</td>
+<td><code>/about</code> (Our Story), <code>/about/team</code>, <code>/about/approach</code></td>
+</tr>
+<tr>
+<td>Services</td>
+<td><code>/services</code> + 11 detail pages: custom-software, web-application (10 sub-capabilities), mobile-app (8 sub-capabilities), saas, website-design-development, ui-ux, ecommerce, cloud-devops, api-integration, maintenance-support, it-consulting</td>
+</tr>
+<tr>
+<td>Hire Developers</td>
+<td><code>/hire-developers</code> (dedicated developers), <code>/hire-developers/technologies</code>, <code>/hire-developers/models</code> (engagement + experience levels + 6-step process), <code>/hire-developers/[category]</code> × 10, hiring form</td>
+</tr>
+<tr>
+<td>Our Work</td>
+<td><code>/work</code> (filter by industry &amp; technology), <code>/work/[slug]</code> case study (overview, challenge, approach, solution, stack, gallery, verified results, authorized feedback, related projects, CTA; confidential/anonymized and DEMO flags)</td>
+</tr>
+<tr>
+<td>Industries</td>
+<td><code>/industries</code> + 12 detail pages (PRD §6.7; target markets, not claims)</td>
+</tr>
+<tr>
+<td>Partnerships</td>
+<td><code>/partnerships</code> + partnership enquiry form</td>
+</tr>
+<tr>
+<td>Insights</td>
+<td><code>/insights</code>, <code>/insights/category/[slug]</code>, <code>/insights/tag/[slug]</code>, <code>/insights/[slug]</code> (author, reading time, share, search/filter, featured)</td>
+</tr>
+<tr>
+<td>Careers</td>
+<td><code>/careers</code> (culture), <code>/careers/[slug]</code> job detail + application with CV upload</td>
+</tr>
+<tr>
+<td>Contact</td>
+<td><code>/contact</code> hub: project / hiring / partnership / general contact forms (tabbed by context), email, WhatsApp, Schedule a Meeting</td>
+</tr>
+<tr>
+<td>Legal</td>
+<td><code>/privacy</code>, <code>/terms</code>, <code>/cookies</code> + cookie preferences centre</td>
+</tr>
+<tr>
+<td>Utility</td>
+<td><code>/newsletter/confirm</code>, <code>/newsletter/unsubscribe</code>, 404/500, <code>sitemap.xml</code>, <code>robots.txt</code></td>
+</tr>
+<tr>
+<td>Admin (separate, noindex)</td>
+<td><code>/admin/login</code>, <code>/admin/invite/[token]</code>, <code>/admin/reset/[token]</code>, <code>/admin/*</code> modules</td>
+</tr>
+</tbody>
+</table>
+<p>Global: sticky header with services mega menu, mobile accessible drawer, primary CTA "Let's Discuss Your Project", 4-column Deep Slate footer (newsletter, social, legal, back-to-top), floating WhatsApp button (public only, with message pre-filled per page context), cookie consent banner.</p>
+<h3>B2. Admin modules (all 14, all backed by real MongoDB data)</h3>
+<ol>
+<li><strong>Dashboard</strong>: 12 widgets (total/new/qualified/proposals/won-lost, distribution, monthly trend, recent enquiries, upcoming follow-ups, website analytics, subscribers, administrative activity). Date filters: Today/7/30/90/Custom. Each user can drag to reorder, show/hide, save and reset their own layout. Drill-down links on widgets.</li>
+<li><strong>Lead Management</strong>: 4 lead types; 6 statuses; assignment; internal notes; follow-ups (upcoming/overdue); search/filter by type, status, date and assignee; CSV/XLSX export; attachments; history; source and page context; record-level RBAC.</li>
+<li><strong>Portfolio &amp; Case Studies</strong>: full CRUD, gallery, confidentiality and demo flags, draft/preview/publish, SEO fields.</li>
+<li><strong>Services Management</strong>: 11 services, priority/order, sections, SEO fields, publish state; the 7-stage process editor lives here.</li>
+<li><strong>Developer Categories</strong>: categories, technologies taxonomy, experience levels, engagement models, hiring process steps.</li>
+<li><strong>Blog / Insights</strong>: posts, categories, tags, authors, featured, draft/preview/publish/schedule, SEO fields.</li>
+<li><strong>Careers &amp; Applications</strong>: jobs (draft/open/closed/archived) and applications (status pipeline, secure CV download).</li>
+<li><strong>Team &amp; Founder Profiles</strong>: profiles, photos, order, publish state, verification flag.</li>
+<li><strong>Testimonials</strong>: attribution, quote, permission/approval evidence, publish state (cannot be published without approval).</li>
+<li><strong>Partnerships</strong>: partnership-page content, partnership types, authorized partner entries (see G-7).</li>
+<li><strong>Newsletter Subscribers</strong>: list, status, consent records, unsubscribe, CSV export.</li>
+<li><strong>Analytics &amp; Reports</strong>: enquiry counts, source, status, conversion funnel, trends, exports (RBAC-filtered).</li>
+<li><strong>User &amp; Role Management</strong>: invitations (time-limited, resend, revoke), activate/deactivate, roles and grants, sessions, 2FA policy, security log view.</li>
+<li><strong>Website Settings</strong>: contact channels, WhatsApp, meeting links and on/off toggle, social links, email routing, SMTP test email, notification default rules, email templates, analytics IDs, upload limits, security policy, backup controls, legal/static page content.</li>
+</ol>
+<p>Plus user-level features: profile, password, 2FA enrolment, theme toggle (light/dark, saved per user, follows the OS setting on first visit), email notification preferences, notification centre.</p>
+<h3>B3. Roles</h3>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Super Admin</th>
+<th>Admin / Manager</th>
+<th>Team Member</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Settings, security policy, SMTP, backups, notification rules</td>
+<td>✅</td>
+<td>❌ (unless granted)</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Users, invitations, roles, sessions of others</td>
+<td>✅</td>
+<td>❌ (unless granted)</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Content modules (services, portfolio, blog, careers, team, testimonials, partnerships, dev categories)</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>All leads, assign, export, reports</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Assigned leads: view, permitted status updates, notes, follow-ups</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅ (assigned only)</td>
+</tr>
+<tr>
+<td>Applications / subscribers</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌ (proposed, see G-9)</td>
+</tr>
+<tr>
+<td>Own profile, password, 2FA, theme, email prefs, notifications</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>All checks are enforced in Express middleware and at the record-query level. Hidden buttons are never treated as authorization.</p>
+<h3>B4. Conversion workflows</h3>
+<ol>
+<li><strong>Project enquiry</strong>: name, business email, company, project type, services, description, budget (optional), timeline, attachment (optional), consent.</li>
+<li><strong>Hire developers</strong>: name, email, company, role/technology, number of devs, experience level, engagement model, duration, extra requirements, consent.</li>
+<li><strong>Partnership</strong>: name/company, email, website, partnership type, services, collaboration requirements, consent.</li>
+<li><strong>General contact</strong>: fields not specified in the PRD; proposed name, email, subject, message, consent (G-4).</li>
+<li><strong>Job application</strong>: job reference, name, email, phone, links, cover note, CV upload, consent.</li>
+<li><strong>Newsletter</strong>: email + consent → double opt-in email → confirmed. One-click unsubscribe.</li>
+<li><strong>WhatsApp</strong>: click-to-chat with context-aware prefilled text; click tracked.</li>
+<li><strong>Schedule a Meeting</strong>: external URL or approved embed. Separate links for project, hiring and partnership. Super Admin on/off toggle.</li>
+<li><strong>Email enquiry</strong>: mailto links to the configured aliases.</li>
+</ol>
+<p>Common pipeline for every form: client + server validation → honeypot + time-trap + rate limit (+ optional Turnstile) → idempotency key → store Lead (type, source, UTM, referrer, page context, consent version + timestamp) → private file to R2 + scan → in-app notification + email to routed recipients (deduplicated) → optional acknowledgement email to the submitter → success state → GA4 conversion event (no PII).</p>
+<h3>B5. Notifications (10 events)</h3>
+<p>New project enquiry · New hiring enquiry · New partnership enquiry · New contact submission · New job application · New newsletter subscription · Lead assigned · Upcoming follow-up · Overdue follow-up · Important admin/security activity (e.g. lockout, new-device login, role change, user deactivated, 2FA disabled, backup failed, repeated email failure).</p>
+<p>Channels: real-time in-app (WebSocket, unread badge, history, mark read / mark all, click-through re-checked against permissions, role-filtered) + email (Super Admin defaults per event → user opt-in/out within those limits; editable templates per event; queued delivery with bounded exponential-backoff retry; delivery log showing queued/sent/failed/retrying with error codes; dedupe keys; test email). Follow-up reminders come from a backend scheduler worker with configurable lead time and timezone, one reminder per follow-up occurrence.</p>
+<hr />
+<h2>C. Requirement Traceability Matrix</h2>
+<p>Priority: <strong>P0</strong> = launch-blocking core · <strong>P1</strong> = required for launch · <strong>P2</strong> = required, can land last before launch.
+Status for every row: <strong>Planned</strong> (nothing has been implemented yet).</p>
+<h3>C1. Foundation &amp; Architecture</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ARC-01</td>
+<td>Next.js frontend, JS/JSX only, no TS (§11.1, App. B)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>Stack decision G-1</td>
+<td>Repo contains zero .ts/.tsx; <code>next build</code> passes</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ARC-02</td>
+<td>Separate Express REST API, versioned <code>/api/v1</code> (§10.1)</td>
+<td>backend</td>
+<td>P0</td>
+<td>G-1</td>
+<td>All endpoints under /api/v1; consistent JSON envelope &amp; error format</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ARC-03</td>
+<td>MongoDB primary DB, file binaries never in Mongo (§13.1)</td>
+<td>backend</td>
+<td>P0</td>
+<td>Atlas URI</td>
+<td>Collections + indexes created; no binary fields</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ARC-04</td>
+<td>Env-driven config, secrets server-side only (§11.4, §12.2)</td>
+<td>both</td>
+<td>P0</td>
+<td>—</td>
+<td><code>.env.example</code> documented; no secret in client bundle (bundle grep)</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ARC-05</td>
+<td>Storage abstraction (R2 replaceable) (§11.4)</td>
+<td>backend</td>
+<td>P0</td>
+<td>R2 creds</td>
+<td>StorageProvider interface; R2 + local-disk driver</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ARC-06</td>
+<td>Docker + Compose: Next, Express, Nginx (+worker) (§11.2)</td>
+<td>devops</td>
+<td>P0</td>
+<td>—</td>
+<td><code>docker compose up</code> brings full stack up</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ARC-07</td>
+<td>Public read endpoints separated from admin endpoints (§10.1)</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td><code>/api/v1/public/*</code> vs <code>/api/v1/admin/*</code> routers</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ARC-08</td>
+<td>Pagination, sorting, filtering on admin lists (§10.1, §8.1)</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td>Every admin list accepts page/limit/sort/q/filters</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ARC-09</td>
+<td>Idempotency for form submissions &amp; jobs (§10.1)</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td>Duplicate submission with same key returns the original result</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ARC-10</td>
+<td>API + env documentation (§10.1, App. B)</td>
+<td>docs</td>
+<td>P1</td>
+<td>—</td>
+<td>API.md + ENV.md complete</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ARC-11</td>
+<td>Seed/initialization strategy; demo content unpublished (App. B)</td>
+<td>backend</td>
+<td>P1</td>
+<td>—</td>
+<td><code>seed</code> script idempotent; demo flagged + unpublished</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C2. Brand &amp; Design</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BRD-01</td>
+<td>Use supplied logo/secondary mark unaltered (§4.1)</td>
+<td>design</td>
+<td>P0</td>
+<td>Vector/transparent assets (F-1)</td>
+<td>Logo pixel-identical, never recoloured without approval</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BRD-02</td>
+<td>Palette #17232F / #F5F2EB / #FFFFFF / #A56F4E (§4.1)</td>
+<td>design</td>
+<td>P0</td>
+<td>—</td>
+<td>Tokens defined; only these brand colours + neutrals</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BRD-03</td>
+<td>Typography: <strong>Ubuntu</strong> (client change, replaces Segoe UI); headings Bold/Medium, body Regular, nav/buttons/labels Medium; fallback Arial, sans-serif</td>
+<td>design</td>
+<td>P0</td>
+<td>— (self-hosted, Ubuntu Font Licence)</td>
+<td>Ubuntu self-hosted (no CDN); weights per role on all OSes</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BRD-04</td>
+<td>Editorial, asymmetric, non-generic layouts; no AI clichés (§4.2)</td>
+<td>design</td>
+<td>P0</td>
+<td>Design approval (Phase 3)</td>
+<td>Each page type has a distinct composition; client sign-off</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BRD-05</td>
+<td>Authentic imagery only; no misleading stock (§4.2)</td>
+<td>design</td>
+<td>P1</td>
+<td>Real photos/screenshots (F-3)</td>
+<td>No stock imagery implying team/office/clients</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BRD-06</td>
+<td>Subtle interactions; respect reduced motion (§4.2, §15)</td>
+<td>frontend</td>
+<td>P1</td>
+<td>—</td>
+<td><code>prefers-reduced-motion</code> disables motion</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BRD-07</td>
+<td>Voice: professional, no hype, placeholders flagged (§4.3)</td>
+<td>content</td>
+<td>P1</td>
+<td>Content from client</td>
+<td>Placeholders visibly flagged in admin</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BRD-08</td>
+<td>Separate admin visual system, Light/Dark (§8.6)</td>
+<td>admin</td>
+<td>P0</td>
+<td>—</td>
+<td>Theme toggle, saved per user, OS default on first visit</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C3. Navigation &amp; Global UI</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NAV-01</td>
+<td>Desktop nav: Home, About, Services mega menu, Our Work, Hire Developers, Insights, Careers, CTA (§5.2)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>All items route correctly</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NAV-02</td>
+<td>Sticky header with subtle transitions (§5.2)</td>
+<td>frontend</td>
+<td>P1</td>
+<td>—</td>
+<td>Header compacts on scroll</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NAV-03</td>
+<td>Categorized services mega menu (§5.2)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>Keyboard accessible; links to all 11 services</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NAV-04</td>
+<td>Accessible mobile drawer (§5.2)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>Focus trap, Esc closes, aria attributes</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NAV-05</td>
+<td>Primary CTA → project enquiry with context (§5.2)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>Opens contact with <code>?type=project</code> preselected</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NAV-06</td>
+<td>Admin login separate from public nav (§5.2)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>No admin link in public UI</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NAV-07</td>
+<td>4-column footer, newsletter, social, legal, back-to-top (§5.3)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>Stacks on mobile; all links valid</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NAV-08</td>
+<td>Configurable social links with enable flags, a11y labels, new tab (§5.4)</td>
+<td>settings</td>
+<td>P1</td>
+<td>Social URLs (F-2)</td>
+<td>Toggling in admin updates footer</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NAV-09</td>
+<td>Social sharing metadata (§5.4)</td>
+<td>SEO</td>
+<td>P1</td>
+<td>—</td>
+<td>OG/Twitter tags on every page</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C4. Public Pages</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PUB-01</td>
+<td>Homepage with 10 sections (§6.1)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>Content</td>
+<td>All sections render from CMS data; empty sections hidden gracefully</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-02</td>
+<td>About: Story, Team, Approach (§5.1)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>Team content</td>
+<td>Pages render; team from Team module</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-03</td>
+<td>Services listing + 11 detail pages (§5.1, §6.2)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>All 11 reachable &amp; editable</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-04</td>
+<td>Mobile app page with 8 capability areas (§6.3)</td>
+<td>content</td>
+<td>P0</td>
+<td>—</td>
+<td>All listed items present</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-05</td>
+<td>Web app page with 10 capability areas (§6.4)</td>
+<td>content</td>
+<td>P0</td>
+<td>—</td>
+<td>All listed items present</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-06</td>
+<td>Hire Developers: tech taxonomy, 10 categories, 4 levels, 6 models, 6-step process, form (§6.5)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>All taxonomy items from Developer Categories module</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-07</td>
+<td>Portfolio landing with industry/technology filters (§6.6)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>Real projects</td>
+<td>Filters work, SEO URLs</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-08</td>
+<td>Case study detail with all sections, related projects, confidential + DEMO labels (§6.6)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>DEMO badge visible; confidential hides client name</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-09</td>
+<td>Industry landing + 12 detail pages (§6.7)</td>
+<td>frontend</td>
+<td>P1</td>
+<td>G-5</td>
+<td>Pages render; case studies linked only if verified</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-10</td>
+<td>Insights listing, categories/tags, featured, search/filter, author, reading time, share (§6.8)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>Search and filter work; reading time computed</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-11</td>
+<td>Careers landing, listings, job detail, application with CV (§6.9)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>Application persisted with private CV</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-12</td>
+<td>7-stage process on Home/About/Services, editable (§6.10)</td>
+<td>both</td>
+<td>P0</td>
+<td>—</td>
+<td>Edit in admin reflects on all three</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-13</td>
+<td>Partnerships page + enquiry path (§5.1)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>Form submits as Partnership lead</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-14</td>
+<td>Contact hub with forms + channels (§5.1, §7.1)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>All channels functional</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-15</td>
+<td>Privacy, Terms, Cookie Policy + preferences (§12.3)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>Legal text (F-9)</td>
+<td>Pages editable; preferences persisted</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PUB-16</td>
+<td>Draft/preview/publish workflow (§16)</td>
+<td>both</td>
+<td>P1</td>
+<td>—</td>
+<td>Draft previewable via signed preview link, not public</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C5. Conversion</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CNV-01</td>
+<td>Project form with specified fields (§7.2)</td>
+<td>forms</td>
+<td>P0</td>
+<td>—</td>
+<td>Optional fields optional; persisted as lead</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-02</td>
+<td>Hire form with specified fields (§7.3)</td>
+<td>forms</td>
+<td>P0</td>
+<td>—</td>
+<td>Persisted as Hiring lead</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-03</td>
+<td>Partnership form (§7.4)</td>
+<td>forms</td>
+<td>P0</td>
+<td>—</td>
+<td>Persisted as Partnership lead</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-04</td>
+<td>General contact form (§7.1, §8.3)</td>
+<td>forms</td>
+<td>P0</td>
+<td>G-4</td>
+<td>Persisted as Contact lead</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-05</td>
+<td>Client + server validation, accessible errors (§7.5)</td>
+<td>forms</td>
+<td>P0</td>
+<td>—</td>
+<td>Server rejects invalid; errors announced (aria-live)</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-06</td>
+<td>Spam prevention &amp; throttling (§7.5)</td>
+<td>backend</td>
+<td>P0</td>
+<td>Optional Turnstile key</td>
+<td>Honeypot/time-trap/rate-limit verified</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-07</td>
+<td>Success confirmation + optional acknowledgement email (§7.5)</td>
+<td>forms</td>
+<td>P0</td>
+<td>SMTP</td>
+<td>Ack email toggle in settings</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-08</td>
+<td>Notify configured recipients, store in admin (§7.5)</td>
+<td>backend</td>
+<td>P0</td>
+<td>SMTP, routing</td>
+<td>Routed per type</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-09</td>
+<td>Status, source, page-context tracking (§7.5)</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td>Lead stores source, UTM, referrer, page</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-10</td>
+<td>Secure attachments, private storage (§7.5, §13.1)</td>
+<td>uploads</td>
+<td>P0</td>
+<td>R2</td>
+<td>No public URL; signed URL only for authorized users</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-11</td>
+<td>Consent capture + timestamp/version (§7.5)</td>
+<td>forms</td>
+<td>P0</td>
+<td>Policy version</td>
+<td>Consent object stored</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-12</td>
+<td>WhatsApp floating click-to-chat, contextual text, not in admin (§7.6)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>WA number (F-2)</td>
+<td>Opens wa.me with page text</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-13</td>
+<td>Meeting booking: URL/embed, 3 contexts, toggle (§7.7)</td>
+<td>settings</td>
+<td>P1</td>
+<td>Booking URLs (F-4)</td>
+<td>Disabled → CTA hidden everywhere</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>CNV-14</td>
+<td>Email routing via existing provider; aliases confirmed (§7.8)</td>
+<td>email</td>
+<td>P0</td>
+<td>SMTP + aliases (F-5)</td>
+<td>Routing table editable</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C6. Admin General &amp; Modules</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADM-01</td>
+<td>Secure portal, functional modules, persistent data (§8.1)</td>
+<td>admin</td>
+<td>P0</td>
+<td>—</td>
+<td>No static mock screens</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ADM-02</td>
+<td>CRUD, pagination, search, filters (§8.1)</td>
+<td>admin</td>
+<td>P0</td>
+<td>—</td>
+<td>All lists</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ADM-03</td>
+<td>Loading/empty/error/success states (§8.1)</td>
+<td>admin</td>
+<td>P0</td>
+<td>—</td>
+<td>Every view</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ADM-04</td>
+<td>Confirm destructive ops (§8.1)</td>
+<td>admin</td>
+<td>P0</td>
+<td>—</td>
+<td>Confirm dialog on delete/revoke/deactivate</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ADM-05</td>
+<td>Backend role check on every protected op (§8.1)</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td>Automated RBAC test suite</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ADM-06</td>
+<td>Responsive admin (§8.1)</td>
+<td>admin</td>
+<td>P1</td>
+<td>—</td>
+<td>Tablet/mobile usable</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-01</td>
+<td>Dashboard (§8.4)</td>
+<td>admin</td>
+<td>P0</td>
+<td>—</td>
+<td>12 widgets, real data</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-02</td>
+<td>Lead Management (§8.3)</td>
+<td>crm</td>
+<td>P0</td>
+<td>—</td>
+<td>see LEAD-*</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-03</td>
+<td>Portfolio &amp; Case Studies (§6.6)</td>
+<td>cms</td>
+<td>P0</td>
+<td>—</td>
+<td>CRUD + gallery + flags</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-04</td>
+<td>Services Management (§6.2)</td>
+<td>cms</td>
+<td>P0</td>
+<td>—</td>
+<td>11 services + process editor</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-05</td>
+<td>Developer Categories (§6.5)</td>
+<td>cms</td>
+<td>P0</td>
+<td>—</td>
+<td>Categories, techs, levels, models, steps</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-06</td>
+<td>Blog / Insights (§6.8)</td>
+<td>cms</td>
+<td>P0</td>
+<td>—</td>
+<td>Posts, categories, tags, draft/publish</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-07</td>
+<td>Careers &amp; Applications (§6.9)</td>
+<td>cms/ats</td>
+<td>P0</td>
+<td>—</td>
+<td>Jobs + application pipeline + archive</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-08</td>
+<td>Team &amp; Founder Profiles</td>
+<td>cms</td>
+<td>P1</td>
+<td>—</td>
+<td>CRUD + ordering + photos</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-09</td>
+<td>Testimonials (permission/approval)</td>
+<td>cms</td>
+<td>P1</td>
+<td>—</td>
+<td>Cannot publish without approval</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-10</td>
+<td>Partnerships</td>
+<td>cms</td>
+<td>P1</td>
+<td>G-7</td>
+<td>Content + partner entries</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-11</td>
+<td>Newsletter Subscribers (§16.1)</td>
+<td>newsletter</td>
+<td>P0</td>
+<td>—</td>
+<td>see NWS-*</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-12</td>
+<td>Analytics &amp; Reports (§14.2)</td>
+<td>reports</td>
+<td>P1</td>
+<td>—</td>
+<td>RBAC-filtered, exportable</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-13</td>
+<td>User &amp; Role Management (§12.1)</td>
+<td>auth</td>
+<td>P0</td>
+<td>—</td>
+<td>see AUTH-*</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>MOD-14</td>
+<td>Website Settings (§10 WebsiteSettings)</td>
+<td>settings</td>
+<td>P0</td>
+<td>—</td>
+<td>All config groups editable</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C7. Lead Management / CRM</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LEAD-01</td>
+<td>4 types: Project, Hiring, Partnership, Contact</td>
+<td>crm</td>
+<td>P0</td>
+<td>—</td>
+<td>Filterable by type</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>LEAD-02</td>
+<td>6 statuses New→Contacted→Qualified→Proposal Sent→Won/Lost</td>
+<td>crm</td>
+<td>P0</td>
+<td>—</td>
+<td>Status change recorded in history</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>LEAD-03</td>
+<td>Assign to team members; owner shown</td>
+<td>crm</td>
+<td>P0</td>
+<td>—</td>
+<td>Assignment triggers notification</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>LEAD-04</td>
+<td>Internal notes with author/timestamp</td>
+<td>crm</td>
+<td>P0</td>
+<td>—</td>
+<td>Notes list chronological</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>LEAD-05</td>
+<td>Follow-up date/time; upcoming &amp; overdue views</td>
+<td>crm</td>
+<td>P0</td>
+<td>Scheduler</td>
+<td>Views correct in configured timezone</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>LEAD-06</td>
+<td>Search + filter by type/status/date/assignee</td>
+<td>crm</td>
+<td>P0</td>
+<td>—</td>
+<td>Combined filters work</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>LEAD-07</td>
+<td>CSV/XLSX export with permission checks</td>
+<td>crm</td>
+<td>P0</td>
+<td>—</td>
+<td>Team Member denied (403)</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>LEAD-08</td>
+<td>Record detail: payload, attachments, history, source, timestamps</td>
+<td>crm</td>
+<td>P0</td>
+<td>—</td>
+<td>All visible</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>LEAD-09</td>
+<td>Team Members see assigned only; Admin all; Super full</td>
+<td>crm</td>
+<td>P0</td>
+<td>—</td>
+<td>403/404 on unassigned access via API</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>LEAD-10</td>
+<td>Team Member updates only permitted status fields</td>
+<td>crm</td>
+<td>P0</td>
+<td>G-9</td>
+<td>Server rejects forbidden fields</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C8. Dashboard</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DSH-01</td>
+<td>12 widgets incl. website analytics &amp; admin activity (§8.4)</td>
+<td>dashboard</td>
+<td>P0</td>
+<td>GA4 Data API (G-8)</td>
+<td>All render from real data</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DSH-02</td>
+<td>Date filters Today/7/30/90/Custom applied consistently</td>
+<td>dashboard</td>
+<td>P0</td>
+<td>—</td>
+<td>One filter drives all widgets</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DSH-03</td>
+<td>Chart hover details, drill-down, empty states</td>
+<td>dashboard</td>
+<td>P1</td>
+<td>—</td>
+<td>Click widget → filtered lead list</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DSH-04</td>
+<td>Rearrange, show/hide, save, restore default, per user (§8.5)</td>
+<td>dashboard</td>
+<td>P0</td>
+<td>—</td>
+<td>Layout survives logout; independent per user</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DSH-05</td>
+<td>Admin activity widget limited to operational data (§8.4)</td>
+<td>dashboard</td>
+<td>P1</td>
+<td>—</td>
+<td>Shows security/delivery events only</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C9. Notifications &amp; Email</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NTF-01..10</td>
+<td>Ten events (§9.1)</td>
+<td>notify</td>
+<td>P0</td>
+<td>—</td>
+<td>Each event generates notification for correct recipients</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NTF-11</td>
+<td>Bell with unread count</td>
+<td>notify</td>
+<td>P0</td>
+<td>—</td>
+<td>Count accurate</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NTF-12</td>
+<td>Real-time without refresh</td>
+<td>notify</td>
+<td>P0</td>
+<td>WebSocket via Nginx</td>
+<td>New lead appears in &lt;3s in another session</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NTF-13</td>
+<td>History, mark read, mark all read</td>
+<td>notify</td>
+<td>P0</td>
+<td>—</td>
+<td>Persisted</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NTF-14</td>
+<td>Click-through with permission recheck</td>
+<td>notify</td>
+<td>P0</td>
+<td>—</td>
+<td>Unauthorized target → 403 page</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NTF-15</td>
+<td>Role-based visibility</td>
+<td>notify</td>
+<td>P0</td>
+<td>—</td>
+<td>Team Member never notified of unassigned leads</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>EML-01</td>
+<td>Email alerts via existing business provider (§9.3)</td>
+<td>email</td>
+<td>P0</td>
+<td>SMTP (F-5)</td>
+<td>Delivered to inbox</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>EML-02</td>
+<td>Super Admin default rules; user prefs within limits</td>
+<td>email</td>
+<td>P0</td>
+<td>—</td>
+<td>User cannot enable an event the SA disabled/forbade</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>EML-03</td>
+<td>Configurable templates per event</td>
+<td>email</td>
+<td>P1</td>
+<td>—</td>
+<td>Edit + preview with variables; sanitized</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>EML-04</td>
+<td>Test-email in settings</td>
+<td>email</td>
+<td>P0</td>
+<td>SMTP</td>
+<td>Result + error shown</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>EML-05</td>
+<td>Bounded retry with backoff</td>
+<td>email</td>
+<td>P0</td>
+<td>—</td>
+<td>Simulated failure → retries → failed</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>EML-06</td>
+<td>Delivery status + error log (queued/sent/failed/retrying)</td>
+<td>email</td>
+<td>P0</td>
+<td>—</td>
+<td>Log view, no message bodies/secrets</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>EML-07</td>
+<td>Dedup via idempotency keys</td>
+<td>email</td>
+<td>P0</td>
+<td>—</td>
+<td>Same event twice → one email</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>EML-08</td>
+<td>Scheduler for follow-ups; timezone, lead time, no duplicate reminders (§9.5)</td>
+<td>worker</td>
+<td>P0</td>
+<td>G-12</td>
+<td>One reminder per occurrence</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C10. Authentication &amp; Security</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AUTH-01</td>
+<td>SA creates users, secure time-limited invitation</td>
+<td>auth</td>
+<td>P0</td>
+<td>SMTP</td>
+<td>Token hashed; expired link rejected</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>AUTH-02</td>
+<td>Invitee sets password; no public registration</td>
+<td>auth</td>
+<td>P0</td>
+<td>—</td>
+<td>No register endpoint exists</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>AUTH-03</td>
+<td>Resend &amp; revoke invitations</td>
+<td>auth</td>
+<td>P0</td>
+<td>—</td>
+<td>Revoked token rejected</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>AUTH-04</td>
+<td>Deactivate/reactivate users</td>
+<td>auth</td>
+<td>P0</td>
+<td>—</td>
+<td>Deactivation kills sessions</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>AUTH-05</td>
+<td>Strong password policy + strength meter</td>
+<td>auth</td>
+<td>P0</td>
+<td>G-11</td>
+<td>Policy enforced server-side; breached-password check optional</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>AUTH-06</td>
+<td>Time-limited password reset</td>
+<td>auth</td>
+<td>P0</td>
+<td>SMTP</td>
+<td>No user enumeration</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>AUTH-07</td>
+<td>Configurable session expiry + inactivity logout</td>
+<td>auth</td>
+<td>P0</td>
+<td>—</td>
+<td>Idle timeout logs out (client + server)</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>AUTH-08</td>
+<td>Lockout/throttling on failed logins</td>
+<td>auth</td>
+<td>P0</td>
+<td>—</td>
+<td>N failures → lockout + security notification</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>AUTH-09</td>
+<td>Optional 2FA configurable by SA</td>
+<td>auth</td>
+<td>P1</td>
+<td>G-10</td>
+<td>TOTP enrol/verify/recovery codes; SA can require</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>AUTH-10</td>
+<td>Individual session logout</td>
+<td>auth</td>
+<td>P0</td>
+<td>—</td>
+<td>Session list; revoke one</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEC-01</td>
+<td>Argon2id/bcrypt hashing</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td>Argon2id used</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEC-02</td>
+<td>Secure httpOnly cookies, rotation, revocation</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td>Secure/HttpOnly/SameSite; rotation on login</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEC-03</td>
+<td>XSS, CSRF, injection, brute force protection</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td>Helmet/CSP, CSRF token, sanitize, Mongo operator injection guard</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEC-04</td>
+<td>Rate limiting on auth &amp; public forms</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td>429 beyond threshold</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEC-05</td>
+<td>No hashes/tokens/secrets in responses or bundles</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td>Automated response-shape tests</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEC-06</td>
+<td>No PII in analytics or logs</td>
+<td>both</td>
+<td>P0</td>
+<td>—</td>
+<td>Event payload review</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEC-07</td>
+<td>Least-privilege DB/storage/backup creds</td>
+<td>devops</td>
+<td>P1</td>
+<td>—</td>
+<td>Separate keys documented</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEC-08</td>
+<td>OWASP review before production</td>
+<td>QA</td>
+<td>P1</td>
+<td>—</td>
+<td>Report delivered</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEC-09</td>
+<td>Security records only, no full audit-log module (§2.3)</td>
+<td>backend</td>
+<td>P0</td>
+<td>—</td>
+<td>Only auth/security/delivery logs exist</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C11. Privacy &amp; Legal</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PRV-01</td>
+<td>Privacy/Terms/Cookie pages + cookie preferences (§12.3)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>Legal text</td>
+<td>Preferences gate GA4</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PRV-02</td>
+<td>Explicit consent on forms</td>
+<td>forms</td>
+<td>P0</td>
+<td>—</td>
+<td>Required checkbox; version stored</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PRV-03</td>
+<td>Retention/deletion rules</td>
+<td>backend</td>
+<td>P1</td>
+<td>Retention periods (G-13)</td>
+<td>Scheduled purge per config</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PRV-04</td>
+<td>Data subject access/correction/deletion support</td>
+<td>admin</td>
+<td>P1</td>
+<td>G-13</td>
+<td>Export/anonymize/delete by email</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PRV-05</td>
+<td>Consent-aware analytics (Consent Mode)</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>No GA cookies before consent</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C12. Files, Backup, Recovery</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIL-01</td>
+<td>R2 public + private buckets, metadata in Mongo</td>
+<td>storage</td>
+<td>P0</td>
+<td>R2 (F-6)</td>
+<td>FileAsset records</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>FIL-02</td>
+<td>Short-lived signed downloads for private files</td>
+<td>storage</td>
+<td>P0</td>
+<td>—</td>
+<td>Link expires; RBAC enforced before issue</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>FIL-03</td>
+<td>Type/MIME/extension/size/signature validation</td>
+<td>storage</td>
+<td>P0</td>
+<td>—</td>
+<td>Spoofed file rejected</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>FIL-04</td>
+<td>Malware scanning where feasible + quarantine</td>
+<td>storage</td>
+<td>P1</td>
+<td>ClamAV RAM (G-14)</td>
+<td>EICAR test file quarantined</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>FIL-05</td>
+<td>Safe generated keys</td>
+<td>storage</td>
+<td>P0</td>
+<td>—</td>
+<td>UUID keys</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>FIL-06</td>
+<td>Limits/types configurable in admin</td>
+<td>settings</td>
+<td>P1</td>
+<td>—</td>
+<td>Settings applied server-side</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>FIL-07</td>
+<td>Optimized public images (WebP/AVIF, responsive)</td>
+<td>storage</td>
+<td>P1</td>
+<td>—</td>
+<td>sharp variants + next/image</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BKP-01</td>
+<td>Automated daily Mongo backups, encrypted, separate location</td>
+<td>ops</td>
+<td>P0</td>
+<td>Destination + key (F-8)</td>
+<td>Daily job logged</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BKP-02</td>
+<td>Retention 7 daily + 4 weekly, configurable</td>
+<td>ops</td>
+<td>P1</td>
+<td>—</td>
+<td>Old backups pruned</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BKP-03</td>
+<td>Manual backup by Super Admin</td>
+<td>ops</td>
+<td>P1</td>
+<td>—</td>
+<td>Button triggers job</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BKP-04</td>
+<td>Documented restore + periodic restore tests</td>
+<td>ops</td>
+<td>P0</td>
+<td>—</td>
+<td>Restore test executed &amp; logged</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>BKP-05</td>
+<td>Backup status monitoring + failure notification</td>
+<td>ops</td>
+<td>P1</td>
+<td>—</td>
+<td>Failure → event #10</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C13. SEO, Analytics, Performance, Accessibility</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SEO-01</td>
+<td>Unique titles/descriptions, editable</td>
+<td>seo</td>
+<td>P0</td>
+<td>—</td>
+<td>No duplicates across pages</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEO-02</td>
+<td>Canonical URLs (subdomain)</td>
+<td>seo</td>
+<td>P0</td>
+<td>—</td>
+<td>Canonical = https://softbizz.kreyszigg.com/...</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEO-03</td>
+<td>XML sitemap + robots.txt (dynamic)</td>
+<td>seo</td>
+<td>P0</td>
+<td>—</td>
+<td>Includes published content only</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEO-04</td>
+<td>Schema.org: Organization, Service, Article, Breadcrumb, JobPosting</td>
+<td>seo</td>
+<td>P1</td>
+<td>—</td>
+<td>Validates in Rich Results test</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEO-05</td>
+<td>OG/social metadata</td>
+<td>seo</td>
+<td>P0</td>
+<td>—</td>
+<td>Per-page OG image/title</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEO-06</td>
+<td>Alt text required on images</td>
+<td>cms</td>
+<td>P1</td>
+<td>—</td>
+<td>Admin enforces alt</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEO-07</td>
+<td>Internal linking services↔industries↔work↔insights</td>
+<td>content</td>
+<td>P1</td>
+<td>—</td>
+<td>Related blocks</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEO-08</td>
+<td>SSR/SSG for public; noindex admin</td>
+<td>seo</td>
+<td>P0</td>
+<td>—</td>
+<td>Admin has noindex + robots disallow</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEO-09</td>
+<td>Search Console verification (configurable)</td>
+<td>seo</td>
+<td>P1</td>
+<td>GSC token (F-7)</td>
+<td>Meta tag/DNS TXT documented</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>SEO-10</td>
+<td>No hreflang unless variants published</td>
+<td>seo</td>
+<td>P2</td>
+<td>—</td>
+<td>None emitted</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ANL-01</td>
+<td>GA4 with configurable ID, consent-gated</td>
+<td>analytics</td>
+<td>P0</td>
+<td>GA4 ID (F-7)</td>
+<td>Events in DebugView</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ANL-02</td>
+<td>Conversion events for 3 forms + contact; WhatsApp &amp; meeting clicks</td>
+<td>analytics</td>
+<td>P0</td>
+<td>—</td>
+<td>No PII in params</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>ANL-03</td>
+<td>Admin analytics from persisted data, RBAC-respecting</td>
+<td>reports</td>
+<td>P1</td>
+<td>—</td>
+<td>Matches DB counts</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PRF-01</td>
+<td>Core Web Vitals toward Good; WebP/AVIF; lazy load; code split; caching; compression; CDN-ready</td>
+<td>perf</td>
+<td>P1</td>
+<td>—</td>
+<td>Lighthouse measured &amp; reported (no invented numbers)</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>A11Y-01</td>
+<td>WCAG 2.2 AA target, keyboard, focus, contrast, semantics, labels, reduced motion</td>
+<td>a11y</td>
+<td>P0</td>
+<td>—</td>
+<td>axe scan + manual keyboard test</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>A11Y-02</td>
+<td>Responsive phone/tablet/laptop/desktop; no horizontal scroll</td>
+<td>frontend</td>
+<td>P0</td>
+<td>—</td>
+<td>360/768/1280/1536 checks</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>A11Y-03</td>
+<td>Chrome, Edge, Firefox, Safari</td>
+<td>QA</td>
+<td>P1</td>
+<td>—</td>
+<td>Cross-browser run</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C14. Newsletter</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NWS-01</td>
+<td>Forms in footer + Insights</td>
+<td>newsletter</td>
+<td>P0</td>
+<td>—</td>
+<td>Both submit</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NWS-02</td>
+<td>Double opt-in verification</td>
+<td>newsletter</td>
+<td>P0</td>
+<td>SMTP</td>
+<td>Pending until confirmed</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NWS-03</td>
+<td>Unsubscribe flow (token)</td>
+<td>newsletter</td>
+<td>P0</td>
+<td>—</td>
+<td>One-click unsubscribe</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NWS-04</td>
+<td>Admin management + CSV export (RBAC)</td>
+<td>newsletter</td>
+<td>P0</td>
+<td>—</td>
+<td>Export permission enforced</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NWS-05</td>
+<td>Consent source/time tracking</td>
+<td>newsletter</td>
+<td>P0</td>
+<td>—</td>
+<td>Stored</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>NWS-06</td>
+<td>Configurable provider; no paid campaign platform</td>
+<td>newsletter</td>
+<td>P1</td>
+<td>—</td>
+<td>SMTP default, provider-agnostic interface</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C15. Hosting &amp; Deployment</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEP-01</td>
+<td>OCI Always Free VM + Docker Compose</td>
+<td>devops</td>
+<td>P0</td>
+<td>OCI account (F-10)</td>
+<td>Stack runs on VM</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DEP-02</td>
+<td>Nginx: / → Next, /api → Express (+WebSocket)</td>
+<td>devops</td>
+<td>P0</td>
+<td>—</td>
+<td>Routing verified</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DEP-03</td>
+<td>MongoDB Atlas</td>
+<td>devops</td>
+<td>P0</td>
+<td>Atlas (F-10)</td>
+<td>Connected with IP allow-list</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DEP-04</td>
+<td>Cloudflare DNS: only <code>softbizz</code> record; root &amp; email DNS untouched</td>
+<td>devops</td>
+<td>P0</td>
+<td>CF access</td>
+<td>Runbook explicitly lists the single record</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DEP-05</td>
+<td>Let's Encrypt + auto renewal</td>
+<td>devops</td>
+<td>P0</td>
+<td>DNS</td>
+<td>certbot renewal timer</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DEP-06</td>
+<td>GitHub repo</td>
+<td>devops</td>
+<td>P1</td>
+<td>GitHub account</td>
+<td>Code pushed</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DEP-07</td>
+<td>Deploy, rollback, backup/restore, migration docs</td>
+<td>docs</td>
+<td>P0</td>
+<td>—</td>
+<td>Docs delivered</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>DEP-08</td>
+<td>Free-tier limitations documented; no paid service without approval</td>
+<td>docs</td>
+<td>P0</td>
+<td>—</td>
+<td>Limitations section</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h3>C16. QA &amp; Launch</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>PRD requirement</th>
+<th>Module</th>
+<th>Pri</th>
+<th>Dependencies</th>
+<th>Acceptance criteria</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QA-01</td>
+<td>§17.1 functional acceptance (14 items)</td>
+<td>QA</td>
+<td>P0</td>
+<td>All above</td>
+<td>Every item evidenced</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>QA-02</td>
+<td>§17.2 security acceptance (9 items)</td>
+<td>QA</td>
+<td>P0</td>
+<td>—</td>
+<td>Automated + manual tests</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>QA-03</td>
+<td>§17.3 UX/a11y/perf acceptance</td>
+<td>QA</td>
+<td>P0</td>
+<td>—</td>
+<td>Report</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>QA-04</td>
+<td>§17.4 launch checklist (12 items)</td>
+<td>QA</td>
+<td>P0</td>
+<td>Client inputs</td>
+<td>Signed off</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>QA-05</td>
+<td>Definition of done / deferred items documented (App. C)</td>
+<td>PM</td>
+<td>P0</td>
+<td>—</td>
+<td>Deferred list with owner/reason/stage</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>D. Proposed technical architecture</h2>
+<pre><code>Browser ──HTTPS──&gt; Cloudflare DNS (softbizz.kreyszigg.com only)
+                      │
+                OCI VM (Docker Compose)
+   ┌──────────────────┼────────────────────────────────────┐
+   │  nginx (TLS, gzip/brotli, caching, rate-limit, WS)    │
+   │     ├── /            → web   (Next.js, App Router, JSX, SSR/SSG/ISR)
+   │     ├── /api/*       → api   (Express REST /api/v1 + Socket.IO)
+   │  worker (Node: email queue, follow-up scheduler, backups, retention)
+   │  clamav (optional, malware scanning — RAM permitting)  │
+   │  certbot (Let's Encrypt renewal)                       │
+   └───────────────────────────────────────────────────────┘
+        │                    │                     │
+   MongoDB Atlas      Cloudflare R2 (public +   Existing business
+   (app data, jobs,    private buckets; backup   SMTP (kreyszigg.com)
+    sessions)          bucket w/ separate keys)
+</code></pre>
+<ul>
+<li><strong>Frontend (<code>web/</code>)</strong>: Next.js (App Router), <code>.js</code>/<code>.jsx</code> only. The public site uses SSG/ISR with on-demand revalidation when admin publishes. The admin lives under <code>/admin</code> in the same Next app, as a client-rendered area with its own layout, design tokens and theme, set to <code>noindex</code>. Plain CSS Modules + CSS variables for both design systems (no utility-template look). <code>next/image</code> for optimization. Socket.IO client for notifications.</li>
+<li><strong>Backend (<code>api/</code>)</strong>: Express, layered as routes → controllers → services → repositories. Libraries: Mongoose for models, Zod for validation (JS), helmet, CORS allow-list, express-rate-limit (Mongo store), CSRF double-submit token, mongo-sanitize, argon2, otplib (TOTP), nodemailer (SMTP), @aws-sdk/client-s3 (R2), multer (memory → validation → R2), file-type (magic bytes), sharp (image variants), exceljs (XLSX) and Socket.IO with cookie auth.</li>
+<li><strong>Auth</strong>: server-side sessions in Mongo (opaque random id in a Secure, HttpOnly, SameSite=Lax cookie). This makes it possible to list sessions, revoke a single session, enforce idle and absolute timeouts, and rotate the session on login or privilege change. Roles + per-user grants are checked by <code>authorize(permission)</code> middleware, and record-level scopes are applied inside lead queries.</li>
+<li><strong>Jobs</strong>: a Mongo-backed job queue (<code>jobs</code> collection with unique dedupe key, status, attempts, nextRunAt). It runs in the <code>worker</code> container using atomic <code>findOneAndUpdate</code> locking, with no Redis needed. This covers email sending/retry, follow-up reminders, the daily backup, retention purge and newsletter confirmation mails.</li>
+<li><strong>Real-time</strong>: the API emits to per-user Socket.IO rooms. The worker emits through a Mongo-backed adapter, or a polling bridge if the Atlas tier blocks change streams.</li>
+<li><strong>Storage</strong>: a <code>StorageProvider</code> interface with an R2 driver and a local driver for dev. Private files are only served through <code>GET /admin/files/:id/download</code>, which runs an RBAC check and returns a 60-second presigned URL.</li>
+<li><strong>Backups</strong>: a worker job runs <code>mongodump</code>, gzips, encrypts (age/AES-256), uploads to a separate R2 bucket with separate credentials, prunes to 7 daily + 4 weekly, writes a <code>backupJobs</code> record, and sends a failure notification if it fails. A restore-test script restores into a scratch database and verifies document counts.</li>
+<li><strong>Collections (logical)</strong>: users, invitations, sessions, roles/permissions config, leads, leadNotes, leadEvents (status/assignment history, not an audit log), followUps, notifications, notificationRules, emailTemplates, emailDeliveries, jobs, services, processSteps, devCategories, technologies, engagementModels, experienceLevels, portfolioProjects, industries, testimonials, teamMembers, partnershipContent/partners, blogPosts, blogCategories, tags, jobs(openings)→<code>jobOpenings</code>, applications, newsletterSubscribers, fileAssets, websiteSettings, contentPages (About/legal), dashboardPreferences, securityEvents, backupJobs, consentRecords.</li>
+</ul>
+<hr />
+<h2>E. Development phases &amp; dependencies</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Deliverable</th>
+<th>Needs from you</th>
+<th>Exit gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 (this)</td>
+<td>PRD understanding, scope, RTM, architecture outline</td>
+<td>Approval + answers to F/G</td>
+<td>Your approval</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Detailed architecture: folder structures, API spec, collections &amp; relations, auth/RBAC matrix, storage, notification, email, env config, deployment</td>
+<td>G-1 decision</td>
+<td>Your approval</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Design system (public + admin light/dark). Homepage + 2 representative internal pages (Service detail, Hire Developers) + admin dashboard/lead screens built as real pages</td>
+<td>Logo vectors, imagery decision, font decision</td>
+<td>Your visual approval</td>
+</tr>
+<tr>
+<td>4a</td>
+<td>Foundation: repo, Docker, Express skeleton, Mongo, auth (invite, login, sessions, reset, lockout, 2FA), RBAC, settings</td>
+<td>SMTP (can use dev mail catcher until provided)</td>
+<td>Tested</td>
+</tr>
+<tr>
+<td>4b</td>
+<td>Public site: all pages, nav, footer, legal, SEO base</td>
+<td>Content (placeholders flagged until supplied)</td>
+<td>Tested</td>
+</tr>
+<tr>
+<td>4c</td>
+<td>Conversion: 4 forms + applications + newsletter, uploads/R2, WhatsApp, meeting, routing</td>
+<td>R2, WhatsApp number, booking URLs</td>
+<td>E2E tested</td>
+</tr>
+<tr>
+<td>4d</td>
+<td>Admin content modules (Services, Portfolio, Dev Categories, Blog, Careers, Team, Testimonials, Partnerships, Newsletter, Settings)</td>
+<td>—</td>
+<td>E2E tested</td>
+</tr>
+<tr>
+<td>4e</td>
+<td>CRM: leads, assignment, notes, follow-ups, exports; dashboard widgets + customization; reports</td>
+<td>—</td>
+<td>E2E + RBAC tested</td>
+</tr>
+<tr>
+<td>4f</td>
+<td>Notifications: 10 events, real-time, rules, preferences, templates, queue/retry/dedupe, logs, test email, scheduler</td>
+<td>SMTP live creds</td>
+<td>Tested incl. failure simulation</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Security hardening + OWASP review, privacy features (retention, DSR)</td>
+<td>Retention/policy values</td>
+<td>Report</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Docker/Nginx/TLS/OCI deployment, backups + restore test, runbooks</td>
+<td>OCI, Atlas, Cloudflare, GitHub access</td>
+<td>Deployed on subdomain</td>
+</tr>
+<tr>
+<td>7</td>
+<td>SEO, GA4/GSC, consent, CWV optimisation</td>
+<td>GA4 ID, GSC access</td>
+<td>Measured results</td>
+</tr>
+<tr>
+<td>8–9</td>
+<td>Full QA, final acceptance pack (12 items in your §13)</td>
+<td>Real content, legal review</td>
+<td>Launch sign-off</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>F. Missing information / credentials required</h2>
+<ol>
+<li><strong>Logo files</strong> in vector (SVG) or transparent PNG, plus a white/reversed version for the Deep Slate footer. The uploads are raster images on an off-white background. A white variant means recolouring, which needs your approval.</li>
+<li><strong>Contact channels</strong>: confirmed email aliases and routing per lead type, WhatsApp Business number, phone (if any), social profile URLs.</li>
+<li><strong>Imagery</strong>: real team/office/work photography and product screenshots, or approval for an imagery-light typographic direction.</li>
+<li><strong>Meeting booking</strong>: provider and URLs (project / hiring / partnership), or embed code.</li>
+<li><strong>Email</strong>: existing business email provider name and SMTP host/port/user/password (or API), sender address, and SPF/DKIM status.</li>
+<li><strong>Cloudflare R2</strong>: account ID, public bucket, private bucket, backup bucket, separate access keys, public asset domain.</li>
+<li><strong>GA4</strong> Measurement ID; Search Console verification method; optionally GA4 Data API service account (for the dashboard "Website analytics" widget).</li>
+<li><strong>Backup policy</strong>: destination, encryption-key custodian, RPO/RTO, restore-test cadence.</li>
+<li><strong>Content</strong>: company story, founder/team bios and photos, real portfolio projects with client permission, authorized testimonials, job openings, legal policy text (or approval to draft templates for counsel review).</li>
+<li><strong>Infrastructure access</strong> when we reach Phase 6: OCI account, MongoDB Atlas, Cloudflare DNS (subdomain record only), GitHub repository.</li>
+<li><strong>Security policy values</strong>: password minimum, idle timeout, absolute session length, lockout threshold/duration, invitation and reset link expiry, 2FA policy.</li>
+<li><strong>Notification rules</strong>: which events send email by default, recipient mapping, reminder lead time, business timezone.</li>
+</ol>
+<hr />
+<h2>G. Conflicts, ambiguities and technical limitations</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Issue</th>
+<th>Why it matters</th>
+<th>Proposed resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G-1</td>
+<td><strong>Build environment vs approved stack.</strong> The Emergent workspace preview is pre-wired for FastAPI + Vite/React (TypeScript). The PRD mandates Next.js (JSX) + Express.</td>
+<td>Using the template stack would violate §11.1. Using Next/Express means reconfiguring the preview's process runners, so Emergent's one-click hosting for this template may not apply. You would deploy to OCI yourself per §11.2, which is the approved plan anyway.</td>
+<td>Build the approved stack (Next.js JSX in <code>web/</code>, Express in <code>api/</code>) in this workspace. Rewire the preview so <code>web</code> serves port 3000 and <code>api</code> serves port 8001, using the in-pod MongoDB for development. Remove the template's FastAPI/TS code. <strong>Needs your approval.</strong></td>
+</tr>
+<tr>
+<td>G-2</td>
+<td><strong>RESOLVED: client chose Ubuntu typography.</strong> Original issue — <strong>Segoe UI licensing.</strong> Segoe UI is a proprietary Microsoft font and cannot legally be self-hosted as a web font without a licence. It is only present on Windows devices.</td>
+<td>On macOS, iOS, Android and Linux, visitors would see Arial, which hurts the premium editorial feel.</td>
+<td>Option A: the stack <code>"Segoe UI", Selawik, Arial, sans-serif</code>, with <strong>Selawik</strong> (Microsoft's open-licensed, metrically compatible Segoe UI substitute) self-hosted for non-Windows devices. Option B: the PRD as written (Segoe UI → Arial). Option C: you buy a Segoe UI web licence. Recommendation: <strong>A</strong>.</td>
+</tr>
+<tr>
+<td>G-3</td>
+<td>Sitemap (§5.1) omits <strong>Industries</strong>, but §6.7 requires industry pages. The desktop nav omits Partnerships/Industries/Contact.</td>
+<td>Placement is undefined.</td>
+<td>Put Industries in the Services mega menu (a separate column) and the footer. Put Partnerships in the footer Company column and on the Contact hub. Contact is reached through the primary CTA and the footer.</td>
+</tr>
+<tr>
+<td>G-4</td>
+<td>The <strong>Contact</strong> lead type exists but its form fields are not specified.</td>
+<td>Field list needed.</td>
+<td>Name, email, company (optional), subject, message, consent.</td>
+</tr>
+<tr>
+<td>G-5</td>
+<td>No admin module is listed for <strong>Industries</strong>, <strong>About/Legal page content</strong> or the <strong>process steps</strong>, yet §6.10/§17.1 say they must be editable. The ContentPage entity exists.</td>
+<td>Without a home in admin, these items wouldn't be editable.</td>
+<td>Industries and process steps go under <strong>Services Management</strong>. About/Legal/Culture content pages go under <strong>Website Settings → Pages</strong>. No new module is created.</td>
+</tr>
+<tr>
+<td>G-6</td>
+<td>Dashboard <strong>"Website analytics"</strong> widget: GA4 data is only available in admin through the GA4 Data API, which needs a service account.</td>
+<td>Credential dependency.</td>
+<td>First-party metrics (enquiry sources, landing pages from lead context, WhatsApp/meeting click counts logged without PII). GA4 Data API is added if you provide credentials.</td>
+</tr>
+<tr>
+<td>G-7</td>
+<td>The <strong>Partnerships</strong> module is ambiguous: partnership enquiries are already handled in Leads.</td>
+<td>Could duplicate Leads.</td>
+<td>The module manages the partnerships page content, partnership types (shown in the form dropdown) and <em>authorized</em> partner entries (unpublished until verified). Enquiries stay in Leads.</td>
+</tr>
+<tr>
+<td>G-8</td>
+<td><strong>Administrative activity widget</strong> vs the exclusion of an audit log.</td>
+<td>Scope creep risk.</td>
+<td>Limit the widget to security events (logins, lockouts, invitations, role changes), email-delivery failures and backup status.</td>
+</tr>
+<tr>
+<td>G-9</td>
+<td>Team Member "permitted status fields" and access to <strong>applications/subscribers</strong> are undefined. "Unless explicitly granted" implies per-user grants.</td>
+<td>RBAC detail.</td>
+<td>Team Members can set any of the 6 statuses on assigned leads but cannot reassign, delete or export. Applications and subscribers are Admin+ only. Super Admin can grant specific extra permissions per user (e.g. <code>users.manage</code>, <code>settings.manage</code>, <code>applications.view</code>).</td>
+</tr>
+<tr>
+<td>G-10</td>
+<td><strong>2FA method</strong> not specified.</td>
+<td>Cost and complexity.</td>
+<td>TOTP authenticator apps + one-time recovery codes. No SMS (it costs money). Super Admin chooses: off / optional / required for selected roles.</td>
+</tr>
+<tr>
+<td>G-11</td>
+<td><strong>Security policy defaults</strong> not specified.</td>
+<td>Need values to implement.</td>
+<td>Min 12 chars with complexity; 30-minute idle timeout; 12-hour absolute session; 5 failures → 15-minute lockout; invitations valid 72 h; reset links 30 min. All editable by Super Admin.</td>
+</tr>
+<tr>
+<td>G-12</td>
+<td><strong>Scheduler timezone and lead time</strong> not specified.</td>
+<td>Reminder behaviour.</td>
+<td>Business timezone Asia/Kolkata (editable). Upcoming reminder 60 minutes before. Overdue notice once at due time + 15 minutes. One reminder per follow-up occurrence. No recurrence for now (each follow-up is one occurrence).</td>
+</tr>
+<tr>
+<td>G-13</td>
+<td><strong>Retention periods and DSR process</strong> not specified.</td>
+<td>Required by §12.3.</td>
+<td>Lost/closed leads 24 months; applications 12 months; unconfirmed newsletter sign-ups 30 days. Super Admin tool to export or anonymize/delete all records for an email address. Legal counsel to confirm.</td>
+</tr>
+<tr>
+<td>G-14</td>
+<td><strong>Malware scanning on the free VM.</strong> ClamAV needs about 1.5–3 GB RAM. The OCI Always Free AMD micro VM has 1 GB; the Ampere A1 (up to 24 GB) is enough but often hard to obtain.</td>
+<td>Feasibility.</td>
+<td>Ship an optional ClamAV container, enabled when RAM allows. Otherwise uploaded files are marked "unscanned/quarantined" until an admin releases them.</td>
+</tr>
+<tr>
+<td>G-15</td>
+<td><strong>Atlas free tier (M0)</strong> has 512 MB storage and no built-in Atlas backups. Some features (change streams, connection limits) are constrained.</td>
+<td>Backups and real-time design.</td>
+<td>Use our own mongodump-to-R2 backups (already planned). Real-time does not rely on change streams. Monitor storage.</td>
+</tr>
+<tr>
+<td>G-16</td>
+<td><strong>Content gap.</strong> No real company story, team, projects or testimonials have been provided. The PRD forbids inventing them.</td>
+<td>Homepage trust sections would be empty.</td>
+<td>Service, hiring, process, industry and legal-template copy will be written in factual, non-claim language. Story, team, portfolio and testimonial sections render only from published admin data and are hidden when empty. Any demo entries are marked DEMO and unpublished.</td>
+</tr>
+<tr>
+<td>G-17</td>
+<td>The PRD's "Prepared" date is 30 Oct 2026. Free-tier terms (OCI, Atlas, R2) change over time.</td>
+<td>Planning accuracy.</td>
+<td>Terms will be re-verified at deployment time, and limitations documented per DEP-08.</td>
+</tr>
+<tr>
+<td>G-18</td>
+<td><strong>WhatsApp on Contact page vs admin</strong>: the floating button is public-only.</td>
+<td>Clarification.</td>
+<td>Confirmed: never rendered in admin.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Implementation checklist (Rule 12): progress log</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 PRD understanding &amp; RTM</td>
+<td>✅ Approved</td>
+<td>Client approval; typography changed to Ubuntu</td>
+</tr>
+<tr>
+<td>2 Architecture</td>
+<td>✅ Approved with changes</td>
+<td>Admin path <code>/phobos</code>; Q1/Q3/Q5 defaults confirmed; placeholder images allowed</td>
+</tr>
+<tr>
+<td>3 Design system + representative pages</td>
+<td>🟡 Built, awaiting visual approval</td>
+<td>Home, Mobile App service page (all 11 service routes), Hire Developers, <code>/phobos</code> dashboard + leads (sample data), light/dark</td>
+</tr>
+<tr>
+<td>4a–4f, 5–9</td>
+<td>⏳ Not started</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Partially started in Phase 3: ARC-01 (JSX only, verified by file scan), ARC-02 (<code>/api/v1</code> skeleton + public read routes), ARC-03, ARC-11 (seed), BRD-01/02/03/06/08, NAV-01..07, PUB-01/03/04/05/06/12 (rendering only; admin editing comes in Phase 4d), CNV-12 (component built, disabled until a number is configured), SEO-02/05/08 (canonical, OG, noindex admin), SEO-04 (Service + Breadcrumb JSON-LD).
+Each stays "In progress" until its admin, permissions and tests are complete.</p></body></html>

@@ -1,0 +1,11 @@
+.fab {
+  position: fixed; right: 20px; bottom: 20px; z-index: 40;
+  display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 18px 0 14px;
+  background: var(--slate); color: var(--ivory); border: 1px solid var(--slate-700);
+  box-shadow: 0 12px 28px -12px rgba(23, 35, 47, 0.5);
+  transition: transform var(--t-med) var(--ease), background-color var(--t-fast) ease;
+}
+.fab:hover { transform: translateY(-2px); background: var(--slate-700); }
+.fab svg { color: var(--copper); }
+.label { font-weight: var(--w-medium); font-size: 0.92rem; }
+@media (max-width: 640px) { .label { display: none; } .fab { padding: 0; width: 52px; justify-content: center; } }

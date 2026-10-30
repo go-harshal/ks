@@ -71,6 +71,9 @@ function Drawer({ id, onClose, onChange }) {
   const [leadQ, setLeadQ] = useState('');
   const [leadHits, setLeadHits] = useState([]);
   const [users, setUsers] = useState([]);
+  const [logoId, setLogoId] = useState('');
+  const [approved, setApproved] = useState(false);
+  useEffect(() => { if (p?.id) { setLogoId(p.logoId || ''); setApproved(!!p.listingApproved); } }, [p?.id, p?.logoId, p?.listingApproved]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!isNew) api(`/admin/partners/${id}`).then((r) => setP(r.data)).catch((e) => setMsg(e.message)); }, [id, isNew]);
   useEffect(() => { api('/admin/partners/meta/owners').then((r) => setUsers(r.data)).catch(() => {}); }, []);
   useEffect(() => { if (leadQ.length < 2) { setLeadHits([]); return undefined; } const t = setTimeout(() => api(`/admin/leads?q=${encodeURIComponent(leadQ)}&limit=6`).then((r) => setLeadHits(r.data)).catch(() => {}), 250); return () => clearTimeout(t); }, [leadQ]);
@@ -81,7 +84,8 @@ function Drawer({ id, onClose, onChange }) {
     try { const r = await fn(); if (r?.data?.id) setP(r.data); setMsg(ok); onChange(reopen ? r.data.id : null); return r; } catch (e) { setMsg(e.message); return null; } finally { setBusy(false); }
   }
   const field = (fd, k) => String(fd.get(k) ?? '');
-  const save = (e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); const body = Object.fromEntries(['name', 'type', 'stage', 'contactName', 'email', 'phone', 'website', 'ownerId', 'summary'].map((k) => [k, field(fd, k)])); run(() => api(isNew ? '/admin/partners' : `/admin/partners/${id}`, { method: isNew ? 'POST' : 'PATCH', body }), 'Saved.', isNew); };
+  const save = (e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); const body = Object.fromEntries(['name', 'type', 'stage', 'contactName', 'email', 'phone', 'website', 'ownerId', 'summary', 'listingNote'].map((k) => [k, field(fd, k)])); body.logoId = logoId; body.listingApproved = fd.get('listingApproved') === 'on'; run(() => api(isNew ? '/admin/partners' : `/admin/partners/${id}`, { method: isNew ? 'POST' : 'PATCH', body }), 'Saved.', isNew); };
+  const uploadLogo = async (e) => { const file = e.target.files?.[0]; if (!file) return; const fd = new FormData(); fd.append('file', file); setBusy(true); try { const r = await api('/admin/media', { method: 'POST', form: fd }); setLogoId(r.data.id); setMsg('Logo uploaded — save to keep it.'); } catch (err) { setMsg(err.message); } finally { setBusy(false); } };
   const uploadAgreement = (e) => { e.preventDefault(); const form = e.currentTarget; const fd = new FormData(form); run(() => api(`/admin/partners/${p.id}/agreements`, { method: 'POST', form: fd }), 'Agreement uploaded.').then((r) => r && form.reset()); };
   const addReferral = (e) => { e.preventDefault(); const form = e.currentTarget; const fd = new FormData(form); run(() => api(`/admin/partners/${p.id}/referrals`, { method: 'POST', body: { leadId: field(fd, 'leadId'), leadName: field(fd, 'leadName'), amount: field(fd, 'amount') || '0', currency: field(fd, 'currency'), status: field(fd, 'status'), note: field(fd, 'note') } }), 'Referral added.').then((r) => { if (r) { form.reset(); setLeadQ(''); } }); };
 
@@ -104,6 +108,17 @@ function Drawer({ id, onClose, onChange }) {
               <div className="adm-field"><label htmlFor="pt-stage">Stage</label><select id="pt-stage" name="stage" className="adm-select" defaultValue={p.stage} data-testid="partner-stage-select">{STAGES.map((t) => <option key={t}>{t}</option>)}</select></div>
               <div className="adm-field"><label htmlFor="pt-owner">Owner</label><select id="pt-owner" name="ownerId" className="adm-select" defaultValue={p.ownerId || ''} data-testid="partner-owner-select"><option value="">Me</option>{users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
               <div className="adm-field" style={{ gridColumn: '1 / -1' }}><label htmlFor="pt-summary">Summary</label><textarea id="pt-summary" name="summary" rows={3} className="adm-textarea" defaultValue={p.summary || ''} data-testid="partner-summary-input" /></div>
+              <fieldset className="adm-field" style={{ gridColumn: '1 / -1', border: '1px solid var(--a-border)', padding: 12, display: 'grid', gap: 10 }} data-testid="partner-listing">
+                <legend style={{ padding: '0 6px', fontWeight: 600 }}>Public listing on the Partnerships page</legend>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                  {logoId ? <img src={`/api/v1/public/media/${logoId}`} alt={`${p.name || 'Partner'} logo`} style={{ height: 48, maxWidth: 160, objectFit: 'contain', background: '#fff', border: '1px solid var(--a-border)', padding: 4 }} data-testid="partner-logo-preview" /> : <span className="adm-sub">No logo yet.</span>}
+                  <label className="adm-btn" style={{ cursor: 'pointer' }}>Upload logo<input type="file" accept=".png,.jpg,.jpeg,.webp" onChange={uploadLogo} hidden data-testid="partner-logo-upload" /></label>
+                  {logoId && <button type="button" className="adm-btn" onClick={() => setLogoId('')} data-testid="partner-logo-remove">Remove logo</button>}
+                </div>
+                <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" name="listingApproved" checked={approved} onChange={(e) => setApproved(e.target.checked)} data-testid="partner-listing-approved" />Listing approved by the partner</label>
+                <div className="adm-field"><label htmlFor="pt-lnote">Approval note {approved ? '*' : ''} (who agreed, when and how)</label><input id="pt-lnote" name="listingNote" className="adm-input" defaultValue={p.listingNote || ''} placeholder="e.g. Approved by email from their director, 12 Mar" data-testid="partner-listing-note" /></div>
+                <small className="adm-sub" data-testid="partner-listing-status">{p.listingApproved && p.listingApprovedAt ? `Approved by ${p.listingApprovedBy} on ${fmt(p.listingApprovedAt)}. ` : ''}Shown publicly only when approved, a logo is uploaded and the stage is Active.</small>
+              </fieldset>
               <div className="adm-actions" style={{ gridColumn: '1 / -1' }}>
                 <button type="submit" className="adm-btn adm-btn--primary" disabled={busy} data-testid="partner-save-button">{isNew ? 'Create partner' : 'Save changes'}</button>
                 {!isNew && <button type="button" className="adm-btn adm-btn--danger" disabled={busy} onClick={async () => { if (window.confirm(`Delete ${p.name}? Agreements and referrals are removed too.`)) { await run(() => api(`/admin/partners/${p.id}`, { method: 'DELETE' }), 'Deleted.'); onClose(); } }} data-testid="partner-delete-button">Delete</button>}

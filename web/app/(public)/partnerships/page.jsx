@@ -1,6 +1,7 @@
 import CTABand from '@/components/public/sections/CTABand';
 import { PageHero, SectionHead, pageStyles as s } from '@/components/public/sections/PageParts';
 import { getPublic } from '@/lib/api';
+import p from './Partners.module.css';
 
 export const metadata = {
   title: 'Partnerships — White-label, Agency and Technology Partners',
@@ -16,7 +17,7 @@ const TYPES = [
 ];
 
 export default async function PartnershipsPage() {
-  const settings = await getPublic('/settings');
+  const [settings, partners] = await Promise.all([getPublic('/settings'), getPublic('/partners')]);
   return (
     <>
       <PageHero testId="partnerships-hero" overline="Partnerships" title="Work with us as a partner." lead="We collaborate with agencies, technology companies and consultants who need a dependable development partner." />
@@ -33,6 +34,22 @@ export default async function PartnershipsPage() {
           </ul>
         </div>
       </section>
+      {partners?.length > 0 && (
+        <section className={s.section} aria-label="Our partners" data-testid="partnerships-logos">
+          <div className="container">
+            <SectionHead overline="Our partners" title="Companies we work with." body="Listed with each partner's permission." />
+            <ul className={p.grid}>
+              {partners.map((x) => (
+                <li key={x.id} className={p.item} data-testid={`partner-logo-${x.id}`}>
+                  <span className={p.logo}><img src={x.logoUrl} alt={`${x.name} logo`} loading="lazy" /></span>
+                  <span className={p.name}>{x.name}</span>
+                  <span className={p.type}>{x.type} partner</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
       <CTABand testId="partnerships-cta" eyebrow="Partnership enquiry" title="Start a partnership conversation." body="Share your company, the type of partnership and what you would like to achieve." primary={{ label: 'Send a partnership enquiry', href: '/contact?type=partnership' }} secondary={{ label: 'See our services', href: '/services' }} meetingUrl={settings?.meeting?.partnershipUrl} />
     </>
   );

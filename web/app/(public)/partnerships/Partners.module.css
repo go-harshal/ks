@@ -1,0 +1,8 @@
+.grid { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 16px; }
+.item { background: var(--ivory); border: 1px solid var(--line); padding: 24px; display: grid; gap: 6px; align-content: start; transition: background-color 0.2s ease; }
+.item:hover { background: #fff; }
+.logo { height: 64px; display: flex; align-items: center; margin-bottom: 8px; }
+.logo img { max-height: 64px; max-width: 100%; object-fit: contain; filter: grayscale(1); opacity: 0.85; transition: filter 0.25s ease, opacity 0.25s ease; }
+.item:hover .logo img { filter: none; opacity: 1; }
+.name { font-weight: 600; }
+.type { color: var(--slate-500); font-size: 0.9rem; }

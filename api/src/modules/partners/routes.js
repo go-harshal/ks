@@ -23,6 +23,7 @@ const id = () => crypto.randomUUID();
 const Partner = model('Partner', baseSchema({
   name: { type: String, index: true }, type: { type: String, enum: TYPES }, stage: { type: String, enum: STAGES, default: 'Prospect', index: true },
   contactName: String, email: String, phone: String, website: String, ownerId: String, sourceLeadId: String, summary: String,
+  logoId: String, listingApproved: { type: Boolean, default: false, index: true }, listingNote: String, listingApprovedAt: Date, listingApprovedBy: String,
   agreements: [{ _id: false, id: String, title: String, fileId: String, fileName: String, startDate: Date, endDate: Date, renewalNotifiedAt: Date, uploadedAt: Date, by: String }],
   referrals: [{ _id: false, id: String, leadId: String, leadName: String, amount: Number, currency: { type: String, enum: CURRENCIES }, status: { type: String, enum: REF_STATUSES }, note: String, at: Date, by: String }],
   notes: [{ _id: false, body: String, byName: String, at: Date }],
@@ -41,8 +42,25 @@ const partnerSchema = z.object({
   name: z.string().trim().min(2).max(160), type: z.enum(TYPES), stage: z.enum(STAGES).default('Prospect'),
   contactName: o(120), email: z.union([z.literal(''), z.string().trim().email('Enter a valid email address').max(200)]).optional().default(''),
   phone: o(40), website: z.union([z.literal(''), z.string().trim().url('Enter a full link starting with https://').max(300)]).optional().default(''),
-  ownerId: o(64), summary: o(3000),
+  ownerId: o(64), summary: o(3000), logoId: o(64),
+  listingApproved: z.coerce.boolean().optional(), listingNote: o(500),
 });
+
+/** Approval of a public logo listing must carry a note recording when/how the partner agreed. */
+async function applyListing(p, d, user) {
+  if (d.logoId) {
+    const f = await FileAsset.findOne({ _id: d.logoId, visibility: 'public', 'owner.type': 'media' }).select('_id').lean();
+    if (!f) throw badRequest('Upload the logo again.', { logoId: 'Not found' });
+  }
+  if (d.listingApproved === undefined) return;
+  const note = d.listingNote ?? p.listingNote ?? '';
+  if (d.listingApproved && !note.trim()) throw badRequest('Add a note recording how the partner approved the listing.', { listingNote: 'Required' });
+  if (d.listingApproved !== !!p.listingApproved) {
+    p.history.push({ kind: d.listingApproved ? 'listing approved' : 'listing withdrawn', by: user.name, at: new Date() });
+    p.listingApprovedAt = d.listingApproved ? new Date() : null;
+    p.listingApprovedBy = d.listingApproved ? user.name : '';
+  }
+}
 async function load(req) { const p = await Partner.findById(req.params.id); if (!p) throw notFound('Partner not found'); return p; }
 const respond = async (res, p, status = 200) => res.status(status).json({ data: view(p.toObject ? p.toObject() : p, await names()) });
 
@@ -62,7 +80,10 @@ router.get('/partners/meta/owners', async (_req, res) => {
 router.get('/partners/:id', async (req, res) => respond(res, await load(req)));
 router.post('/partners', async (req, res) => {
   const d = parse(partnerSchema, req.body);
-  const p = await Partner.create({ ...d, ownerId: d.ownerId || req.user._id, history: [{ kind: 'created', to: d.stage, by: req.user.name, at: new Date() }] });
+  const p = new Partner({ ownerId: req.user._id, history: [{ kind: 'created', to: d.stage, by: req.user.name, at: new Date() }] });
+  await applyListing(p, d, req.user);
+  Object.assign(p, { ...d, ownerId: d.ownerId || req.user._id });
+  await p.save();
   await respond(res, p, 201);
 });
 router.post('/partners/from-lead/:leadId', async (req, res) => {
@@ -80,8 +101,11 @@ router.post('/partners/from-lead/:leadId', async (req, res) => {
 });
 router.patch('/partners/:id', async (req, res) => {
   const p = await load(req);
-  const d = parse(partnerSchema.partial(), req.body);
+  const parsed = parse(partnerSchema.partial(), req.body);
+  // Zod fills defaults even on partial schemas; keep only the fields actually sent.
+  const d = Object.fromEntries(Object.entries(parsed).filter(([k]) => Object.hasOwn(req.body || {}, k)));
   if (d.stage && d.stage !== p.stage) p.history.push({ kind: 'stage', from: p.stage, to: d.stage, by: req.user.name, at: new Date() });
+  await applyListing(p, d, req.user);
   Object.assign(p, d);
   await p.save();
   await respond(res, p);
@@ -149,7 +173,8 @@ router.patch('/partners/:id/referrals/:rid', async (req, res) => {
   const p = await load(req);
   const r = p.referrals.find((x) => x.id === req.params.rid);
   if (!r) throw notFound('Referral not found');
-  Object.assign(r, parse(refSchema.partial().pick({ amount: true, currency: true, status: true, note: true }), req.body));
+  const rd = parse(refSchema.partial().pick({ amount: true, currency: true, status: true, note: true }), req.body);
+  Object.assign(r, Object.fromEntries(Object.entries(rd).filter(([k]) => Object.hasOwn(req.body || {}, k))));
   p.markModified('referrals');
   await p.save();
   await respond(res, p);
@@ -187,4 +212,12 @@ async function runRenewalReminders() {
   return { renewals: sent };
 }
 
-module.exports = { partnerRoutes: router, runRenewalReminders, STAGES };
+// Public: only Active partners whose listing was approved and who have a logo. Name, type and logo only.
+const publicRouter = Router();
+publicRouter.get('/partners', async (_req, res) => {
+  const rows = await Partner.find({ stage: 'Active', listingApproved: true, logoId: { $nin: [null, ''] } }).select('name type logoId').sort({ name: 1 }).lean();
+  res.set('Cache-Control', 'public, max-age=60');
+  res.json({ data: rows.map((p) => ({ id: p._id, name: p.name, type: p.type, logoUrl: `/api/v1/public/media/${p.logoId}` })) });
+});
+
+module.exports = { partnerRoutes: router, publicPartnerRoutes: publicRouter, runRenewalReminders, STAGES };

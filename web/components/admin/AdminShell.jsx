@@ -7,6 +7,7 @@ import {
   LayoutDashboard, Inbox, Briefcase, Layers, Users, PenLine, GraduationCap, UserSquare2, Quote,
   Handshake, Mail, BarChart3, ShieldCheck, Settings, Bell, Sun, Moon, Menu,
 } from 'lucide-react';
+import { api } from '@/lib/client';
 
 const MODULES = [
   { label: 'Dashboard', href: '/phobos', icon: LayoutDashboard, ready: true },
@@ -21,7 +22,7 @@ const MODULES = [
   { label: 'Partnerships', icon: Handshake },
   { label: 'Newsletter Subscribers', icon: Mail },
   { label: 'Analytics & Reports', icon: BarChart3 },
-  { label: 'User & Role Management', icon: ShieldCheck },
+  { label: 'User & Role Management', href: '/phobos/users', icon: ShieldCheck, ready: true, perm: 'users.manage' },
   { label: 'Website Settings', icon: Settings },
 ];
 
@@ -34,6 +35,24 @@ const SAMPLE_NOTIFS = [
 
 export default function AdminShell({ title, children }) {
   const pathname = usePathname();
+  const [me, setMe] = useState(null);
+  useEffect(() => {
+    let timer;
+    api('/auth/me').then((r) => {
+      setMe(r.data.user);
+      const idle = r.data.idleMinutes * 60e3;
+      const reset = () => { clearTimeout(timer); timer = setTimeout(() => signOut('idle'), idle); };
+      ['mousemove', 'keydown', 'click', 'scroll'].forEach((ev) => window.addEventListener(ev, reset, { passive: true }));
+      reset();
+    }).catch(() => {});
+    return () => clearTimeout(timer);
+  }, []);
+  async function signOut(reason) {
+    try { await api('/auth/logout', { method: 'POST' }); } catch { /* already signed out */ }
+    window.location.href = `/phobos/login${reason === 'idle' ? '?next=/phobos' : ''}`;
+  }
+  const canUsers = me && (me.permissions.includes('*') || me.permissions.includes('users.manage'));
+
   const [theme, setTheme] = useState('light');
   const [sideOpen, setSideOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
@@ -56,6 +75,7 @@ export default function AdminShell({ title, children }) {
     localStorage.setItem('ks-admin-theme', next); // per-user server persistence arrives with auth in Phase 4a
   }
   const unread = notifs.filter((n) => n.unread).length;
+  if (!me) return <div className="adm" style={{ gridTemplateColumns: '1fr', placeItems: 'center' }} data-testid="admin-auth-loading"><p className="adm-sub">Checking your session…</p></div>;
 
   return (
     <div className="adm" data-testid="admin-shell">
@@ -69,6 +89,7 @@ export default function AdminShell({ title, children }) {
           {MODULES.map((m) => {
             const Icon = m.icon;
             const slug = m.label.toLowerCase().replace(/[^a-z]+/g, '-');
+            if (m.perm === 'users.manage' && !canUsers) return null;
             if (!m.ready) {
               return (
                 <span key={m.label} className="adm-nav-item" aria-disabled="true" title="Built in Phase 4" data-testid={`admin-nav-${slug}`}>
@@ -88,7 +109,7 @@ export default function AdminShell({ title, children }) {
 
       <div className="adm-main">
         <p className="adm-preview" role="note" data-testid="admin-preview-banner">
-          <strong>Design preview.</strong> Sample data only — no login, nothing is saved to the server. Authentication, real data and permissions arrive in Phase 4.
+          <strong>In progress.</strong> Leads, users and your profile use real data. Dashboard widgets and notifications still show SAMPLE data until Phase 4e/4f. Emails are MOCKED (logged) until SMTP is configured.
         </p>
         <header className="adm-top">
           <button type="button" className="adm-icon-btn adm-burger" aria-label="Open navigation" onClick={() => setSideOpen((v) => !v)} data-testid="admin-sidebar-toggle"><Menu aria-hidden="true" /></button>
@@ -121,10 +142,11 @@ export default function AdminShell({ title, children }) {
             <button type="button" className="adm-icon-btn" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} data-testid="admin-theme-toggle">
               {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
             </button>
-            <div className="adm-user">
-              <span className="adm-avatar" aria-hidden="true">SA</span>
-              <span>Sample Super Admin<small>Super Admin</small></span>
-            </div>
+            <Link href="/phobos/profile" className="adm-user" data-testid="admin-profile-link">
+              <span className="adm-avatar" aria-hidden="true">{me.name.split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase()}</span>
+              <span>{me.name}<small>{me.role.replace('_', ' ')}</small></span>
+            </Link>
+            <button type="button" className="adm-btn" onClick={() => signOut()} data-testid="admin-logout-button">Sign out</button>
           </div>
         </header>
         <div className="adm-content">{children}</div>

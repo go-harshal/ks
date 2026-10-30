@@ -39,3 +39,14 @@ Envelope: `{data}` / `{error:{code,message}}`.
 
 ## Auth / credentials
 None yet (Phase 4a). No accounts exist.
+
+## Phase 4a — Secure admin sign-in, roles and live enquiries (implemented)
+**Auth (Express `/api/v1/auth/*`)**: invitation-only, no public registration. Passwords bcrypt-hashed (12+ chars, upper/lower/number/symbol). Server-side sessions in MongoDB (`sessions`), httpOnly SameSite cookie + double-submit CSRF token (`x-csrf-token`) on every mutating request. Idle expiry (shown in `/auth/me` as `idleMinutes`), 5 failed logins → 15-min lockout, rate-limited login/forgot/reset/invite. Optional TOTP 2FA with one-time recovery codes (`/auth/2fa/setup|enable|disable|verify`). Per-device session list + revoke (`/auth/sessions`). Password change signs out other sessions; role change/deactivation signs the user out everywhere. Security events logged.
+**Roles (server-enforced, `src/config/permissions.js`)**: `super_admin` (all), `admin` (manager: leads incl. export/assign, users except super-admin), `team_member` (only leads assigned to them; no export, no users → 403/404).
+**Bootstrap**: `node src/scripts/create-superadmin.js <email> "<name>"` prints a time-limited invite link. First Super Admin = admin@kreyszigg.com (see test_credentials.md).
+**Users (`/api/v1/admin/users`, `/admin/invitations`)**: invite, resend, revoke, change role, deactivate/reactivate. UI: `/phobos/users`.
+**Admin UI**: `/phobos/login`, `/phobos/forgot`, `/phobos/invite/[token]`, `/phobos/reset/[token]`, `/phobos/profile` (password, 2FA, sessions). All `/phobos/*` pages redirect to login without a valid session.
+**Public enquiries (`POST /api/v1/enquiries/:type`, type = project|hiring|partnership|contact)**: multipart, validated, consent recorded (version + timestamp), honeypot + min fill time (2.5 s) anti-bot, rate-limited, idempotent duplicate guard. Attachments (project/hiring/partnership): allow-listed types verified by magic bytes, size-capped, random storage keys, private; downloads only via authenticated `/api/v1/admin/files/:id/download` with RBAC. UI: `/contact` (tabs; `?type=` deep-link).
+**Leads (`/api/v1/admin/leads`)**: list/search/filter (type, status, assignee), pagination, detail, status (New, Contacted, Qualified, Proposal Sent, Won, Lost), assignee, follow-up date, internal notes, history/audit trail, CSV export. UI: `/phobos/leads`.
+**Providers**: email = MOCKED (written to backend log) until SMTP/provider is configured; storage = local private disk until Cloudflare R2 credentials are supplied (same interface).
+**Still sample**: dashboard widgets and notifications (Phase 4e/4f). Not yet built: background worker, other public pages (about, work, insights, careers, industries, legal), remaining admin modules.

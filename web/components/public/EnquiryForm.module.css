@@ -1,0 +1,25 @@
+.wrap { display: grid; gap: 28px; }
+.tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.tab { background: none; border: 0; padding: 14px 20px 14px 0; margin-right: 20px; font-weight: var(--w-medium); color: var(--slate-500); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color var(--t-fast) ease, border-color var(--t-fast) ease; }
+.tab:hover { color: var(--slate); }
+.tab[aria-selected='true'] { color: var(--slate); border-bottom-color: var(--copper); }
+.form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 24px; }
+.full { grid-column: 1 / -1; }
+.field { display: grid; gap: 8px; align-content: start; }
+.label { font-weight: var(--w-medium); font-size: 0.92rem; }
+.control { width: 100%; min-height: 50px; padding: 12px 14px; border: 1px solid var(--slate-300); background: var(--white); font: inherit; color: var(--slate); border-radius: var(--radius); transition: border-color var(--t-fast) ease, box-shadow var(--t-fast) ease; }
+.control:focus { outline: none; border-color: var(--slate); box-shadow: 0 0 0 3px rgba(165, 111, 78, 0.25); }
+.control[aria-invalid='true'] { border-color: #9b1c1c; }
+textarea.control { resize: vertical; min-height: 140px; }
+.file { font: inherit; font-size: 0.92rem; }
+.hint { font-size: 0.85rem; color: var(--slate-500); }
+.err { color: #9b1c1c; font-size: 0.87rem; min-height: 1em; }
+.consent { display: flex; gap: 12px; align-items: flex-start; font-size: 0.92rem; color: var(--slate-500); }
+.consent input { margin-top: 4px; accent-color: var(--slate); width: 18px; height: 18px; }
+.consent a { text-decoration: underline; text-underline-offset: 3px; color: var(--slate); }
+.submitRow { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.done { display: grid; gap: 18px; padding: clamp(28px, 4vw, 56px); background: var(--white); border: 1px solid var(--line); }
+.done h2 { font-size: var(--fs-h3); font-weight: var(--w-bold); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+@media (max-width: 640px) { .form { grid-template-columns: minmax(0, 1fr); } }

@@ -26,6 +26,7 @@ const KINDS = {
   technologies: { Model: M.Technology, label: 'technology', unique: 'name', schema: z.object({ name: t(60, 1), group: t(40, 2), note: t(200) }) },
   levels: { Model: M.ExperienceLevel, label: 'experience level', unique: 'name', schema: z.object({ name: t(60, 2), range: t(60, 1), description: t(500) }) },
   models: { Model: M.EngagementModel, label: 'engagement model', unique: 'name', schema: z.object({ name: t(80, 2), description: t(600, 5), bestFor: t(300) }) },
+  industries: { Model: M.Industry, label: 'industry', unique: 'slug', schema: z.object({ name: t(80, 2), slug, status, intro: t(600, 10), problems: list(12, 200), solutions: list(12, 200), serviceSlugs: list(12, 80) }) },
   'hiring-steps': { Model: M.HiringStep, label: 'hiring step', unique: 'title', schema: z.object({ title: t(80, 2), description: t(500, 5) }) },
 };
 

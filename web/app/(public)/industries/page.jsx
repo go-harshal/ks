@@ -22,7 +22,7 @@ export default async function IndustriesPage() {
               <li key={i.slug}>
                 <Link href={`/industries/${i.slug}`} className={s.listRow} data-testid={`industry-link-${i.slug}`}>
                   <span className={s.num}>{String(n + 1).padStart(2, '0')}</span>
-                  <span><span className={s.rowTitle}>{i.name}</span><span className={s.rowText}>{INDUSTRY_COPY[i.slug]?.intro}</span></span>
+                  <span><span className={s.rowTitle}>{i.name}</span><span className={s.rowText}>{i.intro || INDUSTRY_COPY[i.slug]?.intro}</span></span>
                   <span className={s.arrow} aria-hidden="true">→</span>
                 </Link>
               </li>

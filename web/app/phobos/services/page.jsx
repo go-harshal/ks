@@ -18,12 +18,25 @@ const FIELDS = [
   { name: 'seo.description', label: 'Search description', type: 'textarea', rows: 2, max: 170, hint: 'Up to 170 characters. Leave blank to use the summary.' },
 ];
 
+const INDUSTRY_FIELDS = [
+  { name: 'name', label: 'Industry name', required: true, max: 80, hint: 'e.g. “Healthcare & HealthTech”.' },
+  { name: 'slug', label: 'Page address (slug)', type: 'slug', required: true },
+  { name: 'status', label: 'Visibility', type: 'status' },
+  { name: 'intro', label: 'Intro', type: 'textarea', required: true, rows: 3, max: 600, hint: 'Shown on the Industries list and at the top of the industry page.' },
+  { name: 'problems', label: 'Common problems', type: 'lines' },
+  { name: 'solutions', label: 'Potential solutions', type: 'lines' },
+  { name: 'serviceSlugs', label: 'Related services', type: 'checkboxes', optionsFrom: 'services' },
+];
+
 export default function ServicesAdminPage() {
   return (
     <AdminShell title="Services Management">
       <div className="adm-page-head"><div><h1 className="adm-h1">Services Management</h1><p className="adm-sub">Edit, add, hide, delete and reorder the services shown in the menu, on the Services page and on each service page.</p></div></div>
       <CatalogManager kind="services" label="service" plural="Services" title="Services" publicHref="/services" fields={FIELDS}
         subtitle="The order here is the order on the website. Click a service to edit it." blank={{ capabilities: [], technologies: [], seo: { title: '', description: '' } }} />
+      <div style={{ height: 24 }} />
+      <CatalogManager kind="industries" label="industry" plural="Industries" title="Industries" publicHref="/industries" fields={INDUSTRY_FIELDS}
+        subtitle="Industry pages under /industries. The first six appear in the Services menu." blank={{ problems: [], solutions: [], serviceSlugs: [] }} />
     </AdminShell>
   );
 }

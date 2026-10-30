@@ -23,7 +23,10 @@ async function run() {
   await upsertAll(M.ExperienceLevel, data.experienceLevels, 'name');
   await upsertAll(M.EngagementModel, data.engagementModels, 'name');
   await upsertAll(M.HiringStep, data.hiringSteps, 'order');
-  await upsertAll(M.Industry, data.industries, 'slug');
+  // Industry page copy lives with the web app's starter content; attach it so a fresh database has full pages.
+  const copySrc = require('fs').readFileSync(require('path').resolve(__dirname, '../../../../web/lib/industries.js'), 'utf8').replace('export const INDUSTRY_COPY =', 'module.exports =');
+  const mod = { exports: {} }; new Function('module', copySrc)(mod); // eslint-disable-line no-new-func
+  await upsertAll(M.Industry, data.industries.map((i) => { const c = mod.exports[i.slug] || {}; return { ...i, intro: c.intro || '', problems: c.problems || [], solutions: c.solutions || [], serviceSlugs: c.services || [] }; }), 'slug');
   await Settings.updateOne({ _id: 'site' }, { $setOnInsert: data.settings }, { upsert: true });
   await Promise.all(Object.values(M).map((Model) => Model.syncIndexes()));
   console.log('Seed complete');

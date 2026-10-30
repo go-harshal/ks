@@ -82,6 +82,12 @@ function Editor({ kind, base, label, fields, groups, initial, onClose, onSaved, 
   const [busy, setBusy] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
   const [slugTouched, setSlugTouched] = useState(!isNew);
+  const [options, setOptions] = useState({});
+  useEffect(() => {
+    // checkboxes fields list another catalogue section, e.g. { optionsFrom: 'services' }
+    fields.filter((f) => f.type === 'checkboxes').forEach((f) => api(`/admin/catalog/${f.optionsFrom}`)
+      .then((r) => setOptions((o) => ({ ...o, [f.name]: r.data.map((x) => [x.slug, x.name]) }))).catch(() => setOptions((o) => ({ ...o, [f.name]: [] }))));
+  }, [fields]);
   useEffect(() => { const esc = (e) => e.key === 'Escape' && onClose(); document.addEventListener('keydown', esc); return () => document.removeEventListener('keydown', esc); }, [onClose]);
 
   const change = (name, v) => setDoc((d) => {
@@ -123,6 +129,24 @@ function Editor({ kind, base, label, fields, groups, initial, onClose, onSaved, 
     const labelEl = <label htmlFor={id}>{f.label}{f.required ? ' *' : ''}</label>;
     const hint = (f.hint || fe) && <small className={fe ? 'adm-overdue' : 'adm-sub'}>{fe || f.hint}</small>;
     if (f.type === 'checkbox') return <label key={f.name} style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" checked={!!v} onChange={(e) => change(f.name, e.target.checked)} data-testid={tid} />{f.label}</label>;
+    if (f.type === 'checkboxes') {
+      const sel = v || [];
+      return (
+        <fieldset key={f.name} className="adm-field" style={{ border: 0, padding: 0, margin: 0 }} data-testid={tid}>
+          <legend className="adm-kpi-label">{f.label}</legend>
+          {!options[f.name] ? <small className="adm-sub">Loading…</small> : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 6 }}>
+              {options[f.name].map(([val, text]) => (
+                <label key={val} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="checkbox" checked={sel.includes(val)} onChange={(e) => change(f.name, e.target.checked ? [...sel, val] : sel.filter((x) => x !== val))} data-testid={`${tid}-${val}`} />{text}
+                </label>
+              ))}
+            </div>
+          )}
+          {hint}
+        </fieldset>
+      );
+    }
     if (f.type === 'status') return <div key={f.name} className="adm-field">{labelEl}<select id={id} className="adm-select" value={v || 'published'} onChange={(e) => change(f.name, e.target.value)} data-testid={tid}><option value="published">Shown on the website</option><option value="draft">Hidden (draft)</option></select></div>;
     if (f.type === 'textarea') return <div key={f.name} className="adm-field">{labelEl}<textarea id={id} rows={f.rows || 3} className="adm-textarea" maxLength={f.max} value={v || ''} onChange={(e) => change(f.name, e.target.value)} data-testid={tid} />{hint}</div>;
     if (f.type === 'lines') return <div key={f.name} className="adm-field">{labelEl}<textarea id={id} rows={4} className="adm-textarea" value={(v || []).join('\n')} onChange={(e) => change(f.name, e.target.value.split('\n').map((x) => x.replace(/^\s+/, '')).filter((x, i, a) => x || i === a.length - 1))} data-testid={tid} /><small className="adm-sub">One per line.</small></div>;

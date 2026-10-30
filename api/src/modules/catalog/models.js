@@ -71,6 +71,10 @@ const Industry = model(
   baseSchema({
     name: String,
     slug: { type: String, unique: true },
+    intro: String,
+    problems: [String],
+    solutions: [String],
+    serviceSlugs: [String],
     order: Number,
     status: { type: String, enum: PUBLICATION, default: 'published' },
   }),

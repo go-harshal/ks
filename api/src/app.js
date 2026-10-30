@@ -11,6 +11,9 @@ const userRoutes = require('./modules/users/routes');
 const leadAdminRoutes = require('./modules/leads/adminRoutes');
 const notificationRoutes = require('./modules/notifications/routes');
 const { adminSystemRoutes, cronRoutes } = require('./modules/system/routes');
+const dashboardRoutes = require('./modules/dashboard/routes');
+const contentAdminRoutes = require('./modules/content/adminRoutes');
+const contentPublicRoutes = require('./modules/content/publicRoutes');
 const { requireAuth } = require('./middleware/auth');
 const { notFoundHandler, errorHandler } = require('./middleware/error');
 
@@ -28,12 +31,15 @@ const v1 = express.Router();
 v1.get('/health', (_req, res) => res.json({ data: { status: 'ok' } }));
 v1.use('/public', publicRoutes);
 v1.use('/public', enquiryRoutes);
+v1.use('/public', contentPublicRoutes);
 v1.use('/auth', authRoutes);
 v1.use('/admin', requireAuth, (req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
 v1.use('/admin', leadAdminRoutes);
 v1.use('/admin', userRoutes);
 v1.use('/admin', notificationRoutes);
 v1.use('/admin', adminSystemRoutes);
+v1.use('/admin', dashboardRoutes);
+v1.use('/admin', contentAdminRoutes);
 
 app.use('/api/v1', v1);
 app.use('/api/cron', cronRoutes);

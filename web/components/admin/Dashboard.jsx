@@ -1,124 +1,154 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ArrowUp, ArrowDown, EyeOff, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { buildSampleLeads, SAMPLE_ACTIVITY, TYPES } from './sampleData';
+import { api } from '@/lib/client';
 import StatusBadge from './StatusBadge';
 
 const RANGES = [
-  { key: 'today', label: 'Today', days: 1 },
-  { key: '7', label: 'Last 7 days', days: 7 },
-  { key: '30', label: 'Last 30 days', days: 30 },
-  { key: '90', label: 'Last 90 days', days: 90 },
-  { key: 'custom', label: 'Custom' },
+  { key: 'today', label: 'Today' }, { key: '7', label: 'Last 7 days' }, { key: '30', label: 'Last 30 days' },
+  { key: '90', label: 'Last 90 days' }, { key: 'custom', label: 'Custom' },
 ];
-
 const WIDGETS = {
   kpis: { title: 'Pipeline summary', span: 12 },
-  trend: { title: 'Monthly enquiry trend', span: 8 },
-  distribution: { title: 'Enquiry distribution', span: 4 },
+  followups: { title: 'Follow-ups', span: 6 },
+  conversion: { title: 'Conversion', span: 6 },
+  trend: { title: 'Monthly enquiry trend (last 6 months)', span: 8 },
+  sources: { title: 'Lead sources', span: 4 },
+  distribution: { title: 'Enquiries by type', span: 6 },
   recent: { title: 'Recent enquiries', span: 6 },
-  followups: { title: 'Upcoming follow-ups', span: 6 },
-  analytics: { title: 'Website analytics', span: 4 },
-  subscribers: { title: 'Newsletter subscribers', span: 4 },
-  activity: { title: 'Administrative activity', span: 4 },
+  workqueue: { title: 'Content & careers queue', span: 12 },
 };
 const DEFAULT_LAYOUT = Object.keys(WIDGETS).map((id) => ({ id, visible: true }));
-const LAYOUT_KEY = 'ks-preview-dashboard-layout';
-
-const fmtDay = (d) => new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+const LAYOUT_KEY = 'ks-dashboard-layout-v2';
+const TIP = { background: 'var(--a-surface)', border: '1px solid var(--a-border)', borderRadius: 4, color: 'var(--a-text)' };
+const fmtDay = (d) => new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', timeZone: 'Asia/Kolkata' });
 
 export default function Dashboard() {
-  const all = useMemo(() => buildSampleLeads(), []);
   const [range, setRange] = useState('30');
   const [custom, setCustom] = useState({ from: '', to: '' });
   const [layout, setLayout] = useState(DEFAULT_LAYOUT);
   const [customizing, setCustomizing] = useState(false);
+  const [data, setData] = useState(null);
+  const [state, setState] = useState('loading');
+  const [fuTab, setFuTab] = useState('overdue');
 
   useEffect(() => {
-    try { const saved = JSON.parse(localStorage.getItem(LAYOUT_KEY) || 'null'); if (Array.isArray(saved)) setLayout(saved); } catch { /* ignore */ }
+    try {
+      const saved = JSON.parse(localStorage.getItem(LAYOUT_KEY) || 'null');
+      if (Array.isArray(saved)) setLayout([...saved.filter((w) => WIDGETS[w.id]), ...DEFAULT_LAYOUT.filter((d) => !saved.some((w) => w.id === d.id))]);
+    } catch { /* ignore */ }
   }, []);
   const persist = (next) => { setLayout(next); localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)); };
   const move = (i, dir) => { const next = [...layout]; const j = i + dir; [next[i], next[j]] = [next[j], next[i]]; persist(next); };
   const toggle = (id) => persist(layout.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)));
   const reset = () => { localStorage.removeItem(LAYOUT_KEY); setLayout(DEFAULT_LAYOUT); };
 
-  const { from, to } = useMemo(() => {
-    const end = new Date();
-    if (range === 'custom') {
-      return { from: custom.from ? new Date(custom.from) : new Date(0), to: custom.to ? new Date(`${custom.to}T23:59:59`) : end };
-    }
-    const r = RANGES.find((x) => x.key === range);
-    const start = new Date(); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - (r.days - 1));
-    return { from: start, to: end };
+  const load = useCallback(() => {
+    if (range === 'custom' && (!custom.from || !custom.to)) return;
+    const qs = new URLSearchParams({ range, ...(range === 'custom' ? custom : {}) });
+    api(`/admin/dashboard?${qs}`).then((r) => { setData(r.data); setState('ok'); }).catch(() => setState('error'));
   }, [range, custom]);
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => { window.addEventListener('ks:leads-changed', load); return () => window.removeEventListener('ks:leads-changed', load); }, [load]);
 
-  const leads = all.filter((l) => { const d = new Date(l.createdAt); return d >= from && d <= to; });
-  const count = (st) => leads.filter((l) => l.status === st).length;
+  if (state === 'error') return <div className="adm-empty" data-testid="dashboard-error"><span>Could not load the dashboard. Refresh to try again.</span></div>;
+  if (!data) return <p className="adm-sub" data-testid="dashboard-loading">Loading dashboard…</p>;
+
+  const st = data.kpis.byStatus;
   const kpis = [
-    { label: 'Total enquiries', value: leads.length, q: '' },
-    { label: 'New', value: count('New'), q: 'status=New' },
-    { label: 'Qualified', value: count('Qualified'), q: 'status=Qualified' },
-    { label: 'Proposals sent', value: count('Proposal Sent'), q: 'status=Proposal%20Sent' },
-    { label: 'Won / Lost', value: `${count('Won')} / ${count('Lost')}`, q: 'status=Won' },
+    { label: 'Total enquiries', value: data.kpis.total, q: '' },
+    { label: 'New', value: st.New, q: 'status=New' },
+    { label: 'Qualified', value: st.Qualified, q: 'status=Qualified' },
+    { label: 'Proposals sent', value: st['Proposal Sent'], q: 'status=Proposal%20Sent' },
+    { label: 'Won / Lost', value: `${st.Won} / ${st.Lost}`, q: 'status=Won' },
   ];
-
-  const trend = useMemo(() => {
-    const months = [];
-    for (let i = 5; i >= 0; i -= 1) {
-      const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i);
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      months.push({ key, month: d.toLocaleDateString('en-GB', { month: 'short' }), Enquiries: 0, Won: 0 });
-    }
-    all.forEach((l) => {
-      const d = new Date(l.createdAt); const m = months.find((x) => x.key === `${d.getFullYear()}-${d.getMonth()}`);
-      if (m) { m.Enquiries += 1; if (l.status === 'Won') m.Won += 1; }
-    });
-    return months;
-  }, [all]);
-  const dist = TYPES.map((t) => ({ type: t, Enquiries: leads.filter((l) => l.type === t).length }));
-  const now = Date.now();
-  const followups = all.filter((l) => l.followUpAt).sort((a, b) => a.followUpAt.localeCompare(b.followUpAt)).slice(0, 6);
+  const fu = data.followups;
+  const fuList = fu[fuTab] || [];
+  const hasQueue = data.reviewQueue || data.applications;
 
   const render = {
     kpis: () => (
       <div className="adm-kpis" data-testid="widget-kpis">
         {kpis.map((k) => (
           <Link key={k.label} href={`/phobos/leads${k.q ? `?${k.q}` : ''}`} className="adm-kpi" data-testid={`kpi-${k.label.toLowerCase().replace(/[^a-z]+/g, '-')}`}>
-            <span className="adm-kpi-label">{k.label}</span>
-            <span className="adm-kpi-value">{k.value}</span>
-            <span className="adm-kpi-note">View records →</span>
+            <span className="adm-kpi-label">{k.label}</span><span className="adm-kpi-value">{k.value}</span><span className="adm-kpi-note">View records →</span>
           </Link>
         ))}
       </div>
     ),
+    followups: () => (
+      <div className="adm-w-body" data-testid="widget-followups">
+        <div className="adm-seg" role="group" aria-label="Follow-up period" style={{ marginBottom: 12 }}>
+          {[['overdue', `Overdue (${fu.overdueCount})`], ['today', `Today (${fu.todayCount})`], ['upcoming', `Next 7 days (${fu.upcomingCount})`]].map(([k, l]) => (
+            <button key={k} type="button" aria-pressed={fuTab === k} onClick={() => setFuTab(k)} data-testid={`followups-tab-${k}`}>{l}</button>
+          ))}
+        </div>
+        {fuList.length === 0 ? <Empty text={fuTab === 'overdue' ? 'Nothing overdue. Well done.' : 'No follow-ups in this period.'} /> : (
+          <ul className="adm-list">
+            {fuList.map((l) => (
+              <li key={l.id}>
+                <Link href={`/phobos/leads?open=${l.id}`} className="grow" style={{ color: 'inherit' }} data-testid={`followup-${l.id}`}><b>{l.name}</b><small>{l.type} · {l.assigneeName}</small></Link>
+                <small className={fuTab === 'overdue' ? 'adm-overdue' : ''}>{fmtDay(l.followUpAt)}</small>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    ),
+    conversion: () => {
+      const c = data.conversion;
+      return (
+        <div className="adm-w-body adm-conv" data-testid="widget-conversion">
+          <div><span className="adm-kpi-label">Win rate</span><span className="adm-kpi-value" data-testid="conversion-win-rate">{c.winRate === null ? '—' : `${c.winRate}%`}</span><small className="adm-sub">Won ÷ closed ({c.won} of {c.closed})</small></div>
+          <div><span className="adm-kpi-label">Lead to win</span><span className="adm-kpi-value" data-testid="conversion-lead-to-win">{c.leadToWin === null ? '—' : `${c.leadToWin}%`}</span><small className="adm-sub">Won ÷ all enquiries in range</small></div>
+          <div><span className="adm-kpi-label">Still open</span><span className="adm-kpi-value">{data.kpis.open}</span><small className="adm-sub">Not yet won or lost</small></div>
+        </div>
+      );
+    },
     trend: () => (
       <div className="adm-w-body" style={{ height: 280 }} data-testid="widget-trend">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={trend} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="gE" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--a-chart-2)" stopOpacity={0.35} /><stop offset="100%" stopColor="var(--a-chart-2)" stopOpacity={0} /></linearGradient>
-            </defs>
+          <AreaChart data={data.trend} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+            <defs><linearGradient id="gE" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--a-chart-2)" stopOpacity={0.35} /><stop offset="100%" stopColor="var(--a-chart-2)" stopOpacity={0} /></linearGradient></defs>
             <CartesianGrid stroke="var(--a-border)" vertical={false} />
             <XAxis dataKey="month" stroke="var(--a-faint)" tickLine={false} axisLine={false} fontSize={12} />
             <YAxis stroke="var(--a-faint)" tickLine={false} axisLine={false} fontSize={12} allowDecimals={false} />
-            <Tooltip contentStyle={{ background: 'var(--a-surface)', border: '1px solid var(--a-border)', borderRadius: 4, color: 'var(--a-text)' }} />
+            <Tooltip contentStyle={TIP} />
             <Area type="monotone" dataKey="Enquiries" stroke="var(--a-chart-2)" strokeWidth={2} fill="url(#gE)" />
             <Area type="monotone" dataKey="Won" stroke="var(--a-chart-1)" strokeWidth={2} fill="transparent" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
     ),
+    sources: () => (
+      <div className="adm-w-body" data-testid="widget-sources">
+        {data.sources.length === 0 ? <Empty text="No enquiries in this period." /> : (
+          <ul className="adm-list">
+            {data.sources.map((s) => {
+              const pct = Math.round((s.count / data.kpis.total) * 100);
+              return (
+                <li key={s.source} style={{ display: 'grid', gap: 6 }}>
+                  <span style={{ display: 'flex', justifyContent: 'space-between' }}><b>{s.source}</b><span>{s.count} · {pct}%</span></span>
+                  <span className="adm-bar" aria-hidden="true"><span style={{ width: `${pct}%` }} /></span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <p className="adm-sub" style={{ marginTop: 10, fontSize: '0.76rem' }}>From UTM source, otherwise the referring site.</p>
+      </div>
+    ),
     distribution: () => (
-      <div className="adm-w-body" style={{ height: 280 }} data-testid="widget-distribution">
+      <div className="adm-w-body" style={{ height: 240 }} data-testid="widget-distribution">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dist} layout="vertical" margin={{ top: 4, right: 12, left: 8, bottom: 0 }}>
+          <BarChart data={Object.entries(data.byType).map(([type, n]) => ({ type, Enquiries: n }))} layout="vertical" margin={{ top: 4, right: 12, left: 8, bottom: 0 }}>
             <CartesianGrid stroke="var(--a-border)" horizontal={false} />
             <XAxis type="number" stroke="var(--a-faint)" tickLine={false} axisLine={false} fontSize={12} allowDecimals={false} />
             <YAxis type="category" dataKey="type" stroke="var(--a-faint)" tickLine={false} axisLine={false} fontSize={12} width={80} />
-            <Tooltip cursor={{ fill: 'var(--a-accent-soft)' }} contentStyle={{ background: 'var(--a-surface)', border: '1px solid var(--a-border)', borderRadius: 4, color: 'var(--a-text)' }} />
+            <Tooltip cursor={{ fill: 'var(--a-accent-soft)' }} contentStyle={TIP} />
             <Bar dataKey="Enquiries" fill="var(--a-chart-1)" radius={[0, 3, 3, 0]} barSize={18} />
           </BarChart>
         </ResponsiveContainer>
@@ -126,11 +156,11 @@ export default function Dashboard() {
     ),
     recent: () => (
       <div className="adm-w-body" data-testid="widget-recent">
-        {leads.length === 0 ? <Empty text="No enquiries in this period." /> : (
+        {data.recent.length === 0 ? <Empty text="No enquiries in this period." /> : (
           <ul className="adm-list">
-            {leads.slice(0, 6).map((l) => (
+            {data.recent.map((l) => (
               <li key={l.id}>
-                <span className="grow"><b>{l.company}</b><small>{l.type} · {fmtDay(l.createdAt)} · {l.source}</small></span>
+                <Link href={`/phobos/leads?open=${l.id}`} className="grow" style={{ color: 'inherit' }} data-testid={`recent-${l.id}`}><b>{l.name}</b><small>{l.type} · {fmtDay(l.createdAt)} · {l.source}</small></Link>
                 <StatusBadge status={l.status} />
               </li>
             ))}
@@ -138,70 +168,37 @@ export default function Dashboard() {
         )}
       </div>
     ),
-    followups: () => (
-      <div className="adm-w-body" data-testid="widget-followups">
-        {followups.length === 0 ? <Empty text="No follow-ups scheduled." /> : (
-          <ul className="adm-list">
-            {followups.map((l) => {
-              const overdue = new Date(l.followUpAt).getTime() < now;
-              return (
-                <li key={l.id}>
-                  <span className="grow"><b>{l.company}</b><small>{l.assignee}</small></span>
-                  <small className={overdue ? 'adm-overdue' : ''}>{overdue ? 'Overdue · ' : ''}{fmtDay(l.followUpAt)}</small>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    ),
-    analytics: () => (
-      <div className="adm-w-body" data-testid="widget-analytics">
-        <ul className="adm-list">
-          <li><span className="grow"><b>WhatsApp clicks</b><small>First-party, no personal data</small></span><b>{Math.round(leads.length * 1.8)}</b></li>
-          <li><span className="grow"><b>Meeting link clicks</b><small>When booking is enabled</small></span><b>{Math.round(leads.length * 0.4)}</b></li>
-          <li><span className="grow"><b>Top source</b><small>From enquiry context</small></span><b>Organic search</b></li>
-        </ul>
-      </div>
-    ),
-    subscribers: () => (
-      <div className="adm-w-body" data-testid="widget-subscribers">
-        <p className="adm-kpi-value">128</p>
-        <p className="adm-sub">Confirmed (double opt-in) · 9 pending · 3 unsubscribed</p>
-      </div>
-    ),
-    activity: () => (
-      <div className="adm-w-body" data-testid="widget-activity">
-        <ul className="adm-list">
-          {SAMPLE_ACTIVITY.map((a) => <li key={a.text}><span className="grow"><b>{a.text}</b><small>{a.kind} · {a.ago}</small></span></li>)}
-        </ul>
+    workqueue: () => (
+      <div className="adm-kpis" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }} data-testid="widget-workqueue">
+        {data.reviewQueue && <>
+          <Link href="/phobos/case-studies?status=in_review" className="adm-kpi" data-testid="queue-case-studies"><span className="adm-kpi-label">Case studies to review</span><span className="adm-kpi-value">{data.reviewQueue.caseStudies}</span><span className="adm-kpi-note">Open review queue →</span></Link>
+          <Link href="/phobos/careers?status=in_review" className="adm-kpi" data-testid="queue-jobs"><span className="adm-kpi-label">Job posts to review</span><span className="adm-kpi-value">{data.reviewQueue.jobs}</span><span className="adm-kpi-note">Open review queue →</span></Link>
+        </>}
+        {data.applications && <Link href="/phobos/careers/applications?status=New" className="adm-kpi" data-testid="queue-applications"><span className="adm-kpi-label">New applications</span><span className="adm-kpi-value">{data.applications.new}</span><span className="adm-kpi-note">{data.applications.total} in total →</span></Link>}
       </div>
     ),
   };
 
-  const visible = layout.filter((w) => w.visible);
+  const visible = layout.filter((w) => w.visible && (w.id !== 'workqueue' || hasQueue));
+  const rangeLabel = RANGES.find((r) => r.key === range).label.toLowerCase();
 
   return (
     <>
       <div className="adm-page-head">
         <div>
           <h1 className="adm-h1">Dashboard</h1>
-          <p className="adm-sub">Showing {RANGES.find((r) => r.key === range).label.toLowerCase()} · sample data</p>
+          <p className="adm-sub" data-testid="dashboard-scope">{data.scope === 'mine' ? 'Leads assigned to you' : 'All company leads'} · {rangeLabel} ({data.range.from} → {data.range.to}, India time)</p>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           <div className="adm-seg" role="group" aria-label="Date range">
-            {RANGES.map((r) => (
-              <button key={r.key} type="button" aria-pressed={range === r.key} onClick={() => setRange(r.key)} data-testid={`date-filter-${r.key}`}>{r.label}</button>
-            ))}
+            {RANGES.map((r) => <button key={r.key} type="button" aria-pressed={range === r.key} onClick={() => setRange(r.key)} data-testid={`date-filter-${r.key}`}>{r.label}</button>)}
           </div>
-          {range === 'custom' && (
-            <>
-              <label className="visually-hidden" htmlFor="from">From</label>
-              <input id="from" type="date" className="adm-date" value={custom.from} onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))} data-testid="date-filter-from" />
-              <label className="visually-hidden" htmlFor="to">To</label>
-              <input id="to" type="date" className="adm-date" value={custom.to} onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))} data-testid="date-filter-to" />
-            </>
-          )}
+          {range === 'custom' && <>
+            <label className="visually-hidden" htmlFor="from">From</label>
+            <input id="from" type="date" className="adm-date" value={custom.from} onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))} data-testid="date-filter-from" />
+            <label className="visually-hidden" htmlFor="to">To</label>
+            <input id="to" type="date" className="adm-date" value={custom.to} onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))} data-testid="date-filter-to" />
+          </>}
           <button type="button" className={`adm-btn ${customizing ? 'adm-btn--primary' : ''}`} onClick={() => setCustomizing((v) => !v)} aria-pressed={customizing} data-testid="dashboard-customize-toggle">
             <SlidersHorizontal aria-hidden="true" />{customizing ? 'Done' : 'Customise'}
           </button>
@@ -214,9 +211,7 @@ export default function Dashboard() {
             <div className="adm-w-tools"><button type="button" title="Restore default layout" aria-label="Restore default layout" onClick={reset} data-testid="dashboard-reset-layout"><RotateCcw aria-hidden="true" /></button></div>
           </div>
           <div className="adm-w-body adm-customize" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
-            {layout.map((w) => (
-              <label key={w.id}><input type="checkbox" checked={w.visible} onChange={() => toggle(w.id)} data-testid={`widget-visibility-${w.id}`} />{WIDGETS[w.id].title}</label>
-            ))}
+            {layout.map((w) => <label key={w.id}><input type="checkbox" checked={w.visible} onChange={() => toggle(w.id)} data-testid={`widget-visibility-${w.id}`} />{WIDGETS[w.id].title}</label>)}
           </div>
         </section>
       )}

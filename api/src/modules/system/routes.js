@@ -4,6 +4,7 @@ const env = require('../../config/env');
 const { authorize } = require('../../middleware/auth');
 const { verifyTransport, sendEmail, processDue, EmailDelivery } = require('../../providers/email');
 const { HttpError } = require('../../utils/errors');
+const { runFollowupReminders } = require('../reminders/service');
 
 // ---- Admin: email health (Super Admin / settings.manage) ----
 const admin = Router();
@@ -39,14 +40,23 @@ function checkCronAuth(req) {
   if (!env.cronSecret || a.length !== b.length || !crypto.timingSafeEqual(a, b)) throw new HttpError(401, 'UNAUTHENTICATED', 'Invalid cron credentials.');
 }
 
-cron.post('/email-retry', (req, res) => {
-  // Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
-  checkCronAuth(req);
-  const runId = req.get('x-webhook-id') || req.body?.run_id || '';
-  if (runId && seen.has(runId)) return res.status(202).json({ data: { duplicate: true } });
-  if (runId) { seen.add(runId); if (seen.size > 500) seen.clear(); }
-  setImmediate(() => processDue().then((n) => n && console.log(`[cron] email-retry processed ${n}`)).catch((e) => console.error('[cron] email-retry', e.message)));
-  return res.status(202).json({ data: { accepted: true } });
+function cronJob(name, work) {
+  cron.post(`/${name}`, (req, res) => {
+    // Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    checkCronAuth(req);
+    const runId = req.get('x-webhook-id') || req.body?.run_id || '';
+    if (runId && seen.has(`${name}:${runId}`)) return res.status(202).json({ data: { duplicate: true } });
+    if (runId) { seen.add(`${name}:${runId}`); if (seen.size > 500) seen.clear(); }
+    setImmediate(() => work().then((r) => console.log(`[cron] ${name}`, JSON.stringify(r))).catch((e) => console.error(`[cron] ${name}`, e.message)));
+    return res.status(202).json({ data: { accepted: true } });
+  });
+}
+cronJob('email-retry', processDue);
+cronJob('followup-reminders', runFollowupReminders);
+
+// Manual run for Super Admins (same idempotent job; already-sent owners are skipped for today).
+admin.post('/system/reminders/run', authorize('settings.manage'), async (_req, res) => {
+  res.json({ data: await runFollowupReminders() });
 });
 
 module.exports = { adminSystemRoutes: admin, cronRoutes: cron };

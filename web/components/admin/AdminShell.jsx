@@ -13,11 +13,11 @@ import { useNotifications, timeAgo } from './useNotifications';
 const MODULES = [
   { label: 'Dashboard', href: '/phobos', icon: LayoutDashboard, ready: true },
   { label: 'Lead Management', href: '/phobos/leads', icon: Inbox, ready: true },
-  { label: 'Portfolio & Case Studies', icon: Briefcase },
+  { label: 'Portfolio & Case Studies', href: '/phobos/case-studies', icon: Briefcase, ready: true, perm: ['content.manage', 'content.draft'] },
   { label: 'Services Management', icon: Layers },
   { label: 'Developer Categories', icon: Users },
   { label: 'Blog / Insights', icon: PenLine },
-  { label: 'Careers & Applications', icon: GraduationCap },
+  { label: 'Careers & Applications', href: '/phobos/careers', icon: GraduationCap, ready: true, perm: ['content.manage', 'content.draft', 'applications.manage'] },
   { label: 'Team & Founder Profiles', icon: UserSquare2 },
   { label: 'Testimonials', icon: Quote },
   { label: 'Partnerships', icon: Handshake },
@@ -45,7 +45,7 @@ export default function AdminShell({ title, children }) {
     try { await api('/auth/logout', { method: 'POST' }); } catch { /* already signed out */ }
     window.location.href = `/phobos/login${reason === 'idle' ? '?next=/phobos' : ''}`;
   }
-  const has = (p) => !!me && (me.permissions.includes('*') || me.permissions.includes(p));
+  const has = (p) => !!me && (me.permissions.includes('*') || [].concat(p).some((x) => me.permissions.includes(x)));
 
   const [theme, setTheme] = useState('light');
   const [sideOpen, setSideOpen] = useState(false);
@@ -102,7 +102,7 @@ export default function AdminShell({ title, children }) {
 
       <div className="adm-main">
         <p className="adm-preview" role="note" data-testid="admin-preview-banner">
-          <strong>In progress.</strong> Leads, users, notifications and your profile use real data. Dashboard widgets still show SAMPLE data.
+          <strong>In progress.</strong> Dashboard, leads, case studies, careers, users and notifications use real data. Other modules arrive in later phases.
         </p>
         <header className="adm-top">
           <button type="button" className="adm-icon-btn adm-burger" aria-label="Open navigation" onClick={() => setSideOpen((v) => !v)} data-testid="admin-sidebar-toggle"><Menu aria-hidden="true" /></button>

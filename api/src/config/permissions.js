@@ -6,7 +6,7 @@ const SUPER_ONLY = ['users.manage', 'settings.manage', 'backups.manage', 'privac
 const ROLE_PERMS = {
   super_admin: ['*'],
   admin: ['content.manage', 'leads.view_all', 'leads.assign', 'leads.export', 'reports.view', 'applications.manage', 'newsletter.manage'],
-  team_member: ['leads.view_assigned'],
+  team_member: ['leads.view_assigned', 'content.draft'],
 };
 
 // Extra permissions a Super Admin may grant per user (never Super-only ones to Team Members).

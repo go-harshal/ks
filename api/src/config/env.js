@@ -23,6 +23,7 @@ const env = {
     pass: process.env.SMTP_PASS || '',
   },
   emailFrom: process.env.EMAIL_FROM || 'no-reply@kreyszigg.com',
+  hrEmail: process.env.HR_EMAIL || 'hr@kreyszigg.com',
   alertTo: process.env.EMAIL_ALERT_TO || 'info@kreyszigg.com',
   cronSecret: process.env.WEBHOOK_CRON_SECRET || '',
   corsOrigins: (process.env.CORS_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean),

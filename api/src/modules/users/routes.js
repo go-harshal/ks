@@ -9,7 +9,8 @@ const { sendEmail } = require('../../providers/email');
 const env = require('../../config/env');
 
 const router = Router();
-router.use(authorize('users.manage'));
+// Scoped to this module's paths only — a bare router.use() would gate every later /admin router too.
+router.use(['/users', '/invitations'], authorize('users.manage'));
 
 const role = z.enum(['super_admin', 'admin', 'team_member']);
 

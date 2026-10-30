@@ -17,7 +17,7 @@ const requireLeadAccess = (req, _res, next) => {
   if (!can(req.user, 'leads.view_all') && !can(req.user, 'leads.view_assigned')) throw new HttpError(403, 'FORBIDDEN', 'You do not have access to leads.');
   next();
 };
-router.use(requireLeadAccess);
+router.use(['/leads', '/files'], requireLeadAccess);
 
 async function loadLead(req) {
   const lead = await Lead.findOne({ _id: req.params.id, ...scope(req.user) });

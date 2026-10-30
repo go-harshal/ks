@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { Download, X } from 'lucide-react';
+import { Download, X, Trash2 } from 'lucide-react';
 import { api } from '@/lib/client';
 import StatusBadge from './StatusBadge';
 
@@ -77,15 +77,22 @@ export default function LeadsTable() {
           <button type="button" className="adm-btn" disabled={page === 1} onClick={() => setPage((p) => p - 1)} data-testid="leads-prev-page">Previous</button>
           <button type="button" className="adm-btn" disabled={page >= pages} onClick={() => setPage((p) => p + 1)} data-testid="leads-next-page">Next</button></span></div>
       </section>
-      {openId && <LeadDrawer id={openId} onClose={() => setOpenId(null)} onChange={load} assignees={assignees} />}
+      {openId && <LeadDrawer id={openId} onClose={() => setOpenId(null)} onChange={load} assignees={assignees} canDelete={me?.role === 'super_admin'} />}
     </>
   );
 }
 
-function LeadDrawer({ id, onClose, onChange, assignees }) {
+function LeadDrawer({ id, onClose, onChange, assignees, canDelete }) {
   const [lead, setLead] = useState(null);
   const [err, setErr] = useState('');
   const [note, setNote] = useState('');
+  const [confirming, setConfirming] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const removeLead = async () => {
+    setDeleting(true); setErr('');
+    try { await api(`/admin/leads/${id}`, { method: 'DELETE', body: { confirm: confirmText } }); onChange(); onClose(); } catch (e) { setErr(e.message); setDeleting(false); }
+  };
   const reload = useCallback(() => api(`/admin/leads/${id}`).then((r) => setLead(r.data)).catch((e) => setErr(e.message)), [id]);
   useEffect(() => { reload(); const esc = (e) => e.key === 'Escape' && onClose(); document.addEventListener('keydown', esc); return () => document.removeEventListener('keydown', esc); }, [reload, onClose]);
   const act = async (fn) => { setErr(''); try { await fn(); await reload(); onChange(); } catch (e) { setErr(e.message); } };
@@ -130,6 +137,23 @@ function LeadDrawer({ id, onClose, onChange, assignees }) {
             </form>
             <ul className="adm-list" data-testid="lead-notes-list">{lead.notes.map((n) => <li key={n.id}><span className="grow"><b style={{ whiteSpace: 'pre-wrap' }}>{n.body}</b><small>{n.authorName} · {fmt(n.createdAt)}</small></span></li>)}</ul>
             <div><p className="adm-kpi-label">History</p><ul className="adm-list">{[...lead.history].reverse().map((h, i) => <li key={i}><span className="grow"><small>{h.kind}{h.to ? ` → ${h.to}` : ''}{h.by ? ` · ${h.by}` : ''} · {fmt(h.at)}</small></span></li>)}</ul></div>
+            {canDelete && (
+              <div style={{ borderTop: '1px solid var(--a-border)', paddingTop: 16, display: 'grid', gap: 10 }} data-testid="lead-delete-zone">
+                {!confirming ? (
+                  <button type="button" className="adm-btn adm-btn--danger" style={{ width: 'fit-content' }} onClick={() => setConfirming(true)} data-testid="lead-delete-button"><Trash2 aria-hidden="true" />Delete lead</button>
+                ) : (
+                  <div role="alertdialog" aria-labelledby="lead-del-title" style={{ display: 'grid', gap: 10 }} data-testid="lead-delete-confirm">
+                    <p id="lead-del-title" style={{ margin: 0 }}><b>Permanently delete this enquiry?</b><br /><small className="adm-sub">The lead, its notes, attachments and alerts are removed for good. This cannot be undone.</small></p>
+                    <label className="adm-kpi-label" htmlFor="lead-del-input">Type DELETE to confirm</label>
+                    <input id="lead-del-input" className="adm-input" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoComplete="off" autoFocus data-testid="lead-delete-confirm-input" />
+                    <span style={{ display: 'flex', gap: 8 }}>
+                      <button type="button" className="adm-btn adm-btn--danger" disabled={confirmText !== 'DELETE' || deleting} onClick={removeLead} data-testid="lead-delete-confirm-button">{deleting ? 'Deleting…' : 'Delete permanently'}</button>
+                      <button type="button" className="adm-btn" onClick={() => { setConfirming(false); setConfirmText(''); }} data-testid="lead-delete-cancel-button">Cancel</button>
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </aside>

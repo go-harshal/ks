@@ -11,5 +11,9 @@ const { hashPassword } = require('../modules/auth/service');
   const passwordHash = await hashPassword('QaAdmin#2026xyz');
   await User.updateOne({ email }, { $set: { name: 'QA Admin', role: 'admin', status: 'active', passwordHash, failedLogins: 0 }, $unset: { lockedUntil: 1 } }, { upsert: true });
   console.log('QA admin ready:', email);
+  // QA Super Admin for testing Super-Admin-only actions (e.g. permanent lead deletion). Preview only.
+  const superEmail = 'qa.super@example.com';
+  await User.updateOne({ email: superEmail }, { $set: { name: 'QA Super Admin', role: 'super_admin', status: 'active', passwordHash: await hashPassword('QaSuper#2026xyz'), failedLogins: 0 }, $unset: { lockedUntil: 1 } }, { upsert: true });
+  console.log('QA super admin ready:', superEmail);
   await mongoose.disconnect();
 })();

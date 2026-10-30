@@ -6,6 +6,7 @@ Admin portal: https://softbizz--8sja0ju5.preview.emergentagent.com/phobos/login
 |---|---|---|
 | Super Admin (owner) | admin@kreyszigg.com | Set by the owner via password reset on 2026-10-30. NOT known to the agent, so don't reset it. |
 | Admin (QA, preview only) | qa.admin@example.com | QaAdmin#2026xyz |
+| Super Admin (QA, preview only) | qa.super@example.com | QaSuper#2026xyz |
 | Team Member (test) | team.a@example.com | TeamMember#2026x |
 
 Notes:

@@ -5,7 +5,8 @@ const { authorize } = require('../../middleware/auth');
 const { can } = require('../../config/permissions');
 const { z, parse } = require('../../middleware/validate');
 const { HttpError, notFound } = require('../../utils/errors');
-const { readPrivate } = require('../../providers/storage');
+const mongoose = require('mongoose');
+const { readPrivate, deletePrivate } = require('../../providers/storage');
 const { sendEmail } = require('../../providers/email');
 
 const { notify } = require('../notifications/service');
@@ -90,6 +91,26 @@ router.patch('/leads/:id', async (req, res) => {
   if (body.followUpAt !== undefined) { lead.followUpAt = body.followUpAt ? new Date(body.followUpAt) : null; lead.history.push({ kind: 'followup', to: body.followUpAt || 'cleared', by: req.user.name, at }); }
   await lead.save();
   res.json({ data: view(lead.toObject(), await userNames()) });
+});
+
+// Permanent deletion (spam/test enquiries): Super Admin only, must send confirm: "DELETE".
+// Removes the lead, its notes, attachment files and related alerts; partner referrals keep the name but lose the link.
+router.delete('/leads/:id', async (req, res) => {
+  if (req.user.role !== 'super_admin') throw new HttpError(403, 'FORBIDDEN', 'Only Super Admins can delete leads.');
+  parse(z.object({ confirm: z.literal('DELETE', { message: 'Type DELETE to confirm.' }) }), req.body || {});
+  const lead = await loadLead(req);
+  const files = await FileAsset.find({ _id: { $in: lead.attachments || [] } }).select('storageKey').lean();
+  await Promise.all(files.map((f) => deletePrivate(f.storageKey).catch(() => {})));
+  await Promise.all([
+    FileAsset.deleteMany({ _id: { $in: files.map((f) => f._id) } }),
+    LeadNote.deleteMany({ leadId: lead._id }),
+    mongoose.connection.collection('notifications').deleteMany({ leadId: lead._id }),
+    mongoose.connection.collection('partners').updateMany({ 'referrals.leadId': lead._id }, { $set: { 'referrals.$[r].leadId': '' } }, { arrayFilters: [{ 'r.leadId': lead._id }] }),
+    mongoose.connection.collection('partners').updateMany({ sourceLeadId: lead._id }, { $set: { sourceLeadId: '' } }),
+  ]);
+  await lead.deleteOne();
+  console.info(`[leads] ${req.user.email} permanently deleted lead ${lead._id} (${lead.type})`); // eslint-disable-line no-console
+  res.json({ data: { ok: true } });
 });
 
 router.post('/leads/:id/assign', authorize('leads.assign'), async (req, res) => {

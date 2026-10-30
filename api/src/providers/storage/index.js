@@ -17,4 +17,6 @@ async function putPrivate(buffer, ext, prefix = 'private/leads') {
 
 const readPrivate = (key) => fs.readFile(path.join(ROOT, path.normalize(key).replace(/^(\.\.[/\\])+/, '')));
 
-module.exports = { putPrivate, readPrivate };
+const deletePrivate = (key) => fs.rm(path.join(ROOT, path.normalize(key).replace(/^(\.\.[/\\])+/, '')), { force: true });
+
+module.exports = { putPrivate, readPrivate, deletePrivate };

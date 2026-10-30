@@ -23,7 +23,7 @@ const id = () => crypto.randomUUID();
 const Partner = model('Partner', baseSchema({
   name: { type: String, index: true }, type: { type: String, enum: TYPES }, stage: { type: String, enum: STAGES, default: 'Prospect', index: true },
   contactName: String, email: String, phone: String, website: String, ownerId: String, sourceLeadId: String, summary: String,
-  logoId: String, listingApproved: { type: Boolean, default: false, index: true }, listingNote: String, listingApprovedAt: Date, listingApprovedBy: String,
+  logoId: String, listingApproved: { type: Boolean, default: false, index: true }, listingNote: String, listingApprovedAt: Date, listingApprovedBy: String, showcaseOrder: { type: Number, default: 1000 },
   agreements: [{ _id: false, id: String, title: String, fileId: String, fileName: String, startDate: Date, endDate: Date, renewalNotifiedAt: Date, uploadedAt: Date, by: String }],
   referrals: [{ _id: false, id: String, leadId: String, leadName: String, amount: Number, currency: { type: String, enum: CURRENCIES }, status: { type: String, enum: REF_STATUSES }, note: String, at: Date, by: String }],
   notes: [{ _id: false, body: String, byName: String, at: Date }],
@@ -76,6 +76,17 @@ router.get('/partners', async (req, res) => {
 router.get('/partners/meta/owners', async (_req, res) => {
   const users = await User.find({ status: 'active' }).select('name').sort({ name: 1 }).lean();
   res.json({ data: users.map((u) => ({ id: u._id, name: u.name })) });
+});
+const SHOWCASE = { stage: 'Active', listingApproved: true, logoId: { $nin: [null, ''] } };
+const SHOWCASE_SORT = { showcaseOrder: 1, name: 1 };
+router.get('/partners/meta/showcase', async (_req, res) => {
+  const rows = await Partner.find(SHOWCASE).select('name type logoId showcaseOrder').sort(SHOWCASE_SORT).lean();
+  res.json({ data: rows.map((p) => ({ id: p._id, name: p.name, type: p.type, logoUrl: `/api/v1/public/media/${p.logoId}` })) });
+});
+router.put('/partners/meta/showcase', async (req, res) => {
+  const { ids } = parse(z.object({ ids: z.array(z.string().max(64)).max(500) }), req.body);
+  await Partner.bulkWrite(ids.map((pid, i) => ({ updateOne: { filter: { _id: pid }, update: { $set: { showcaseOrder: i } } } })));
+  res.json({ data: { ok: true } });
 });
 router.get('/partners/:id', async (req, res) => respond(res, await load(req)));
 router.post('/partners', async (req, res) => {
@@ -215,7 +226,7 @@ async function runRenewalReminders() {
 // Public: only Active partners whose listing was approved and who have a logo. Name, type and logo only.
 const publicRouter = Router();
 publicRouter.get('/partners', async (_req, res) => {
-  const rows = await Partner.find({ stage: 'Active', listingApproved: true, logoId: { $nin: [null, ''] } }).select('name type logoId').sort({ name: 1 }).lean();
+  const rows = await Partner.find(SHOWCASE).select('name type logoId').sort(SHOWCASE_SORT).lean();
   res.set('Cache-Control', 'public, max-age=60');
   res.json({ data: rows.map((p) => ({ id: p._id, name: p.name, type: p.type, logoUrl: `/api/v1/public/media/${p.logoId}` })) });
 });

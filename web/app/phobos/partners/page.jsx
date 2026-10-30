@@ -1,8 +1,8 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useState } from 'react';
-import { Plus, X, Download, Trash2 } from 'lucide-react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Plus, X, Download, Trash2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import AdminShell from '@/components/admin/AdminShell';
 import { api } from '@/lib/client';
 
@@ -58,8 +58,61 @@ function Pipeline() {
           </tbody>
         </table></div>
       </section>
+      <Showcase refresh={rows} />
       {openId && <Drawer key={openId} id={openId} onClose={() => setOpenId(null)} onChange={(nid) => { load(); if (nid) setOpenId(nid); }} />}
     </>
+  );
+}
+
+/** Drag (or move with the arrow buttons) the publicly listed partners into the order shown on /partnerships. */
+function Showcase({ refresh }) {
+  const [list, setList] = useState(null);
+  const [dirty, setDirty] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [dragging, setDragging] = useState(null);
+  const listRef = useRef(null);
+  useEffect(() => { api('/admin/partners/meta/showcase').then((r) => { setList(r.data); setDirty(false); }).catch(() => setList([])); }, [refresh]);
+  const move = (from, to) => { if (to < 0 || to >= list.length || from === to) return; const next = [...list]; next.splice(to, 0, next.splice(from, 1)[0]); setList(next); setDirty(true); setMsg(''); };
+  // Pointer-based drag (mouse and touch): the row under the pointer becomes the drop position.
+  const startDrag = (e, index) => {
+    e.preventDefault();
+    let cur = index;
+    setDragging(index);
+    const onMove = (ev) => {
+      const row = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('[data-index]');
+      if (!row || !listRef.current?.contains(row)) return;
+      const to = Number(row.dataset.index);
+      if (to !== cur) { const from = cur; setList((l) => { const next = [...l]; next.splice(to, 0, next.splice(from, 1)[0]); return next; }); cur = to; setDragging(to); setDirty(true); setMsg(''); }
+    };
+    const onUp = () => { setDragging(null); window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); window.removeEventListener('pointercancel', onUp); };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+  };
+  const save = async () => { try { await api('/admin/partners/meta/showcase', { method: 'PUT', body: { ids: list.map((x) => x.id) } }); setDirty(false); setMsg('Order saved. The Partnerships page updates within a minute.'); } catch (e) { setMsg(e.message); } };
+  if (!list) return null;
+  return (
+    <section className="adm-w" style={{ padding: 20 }} data-testid="showcase-order">
+      <div className="adm-page-head" style={{ marginBottom: 8 }}>
+        <div><h2 className="adm-w-title">Showcase order</h2><p className="adm-sub">Drag to set the order logos appear on the public Partnerships page.</p></div>
+        <button type="button" className="adm-btn adm-btn--primary" disabled={!dirty} onClick={save} data-testid="showcase-save-button">Save order</button>
+      </div>
+      <p role="status" className="adm-sub" data-testid="showcase-message">{msg}</p>
+      {list.length === 0 ? <p className="adm-sub" data-testid="showcase-empty">No partners are listed yet. A partner appears here once it is Active, has a logo and its listing is approved.</p> : (
+        <ol className="adm-list" ref={listRef} data-testid="showcase-list">
+          {list.map((x, i) => (
+            <li key={x.id} data-index={i} style={{ gap: 12, opacity: dragging === i ? 0.5 : 1, transition: 'opacity 0.15s ease' }} data-testid={`showcase-item-${x.id}`}>
+              <button type="button" className="adm-icon-btn" aria-label={`Drag to reorder ${x.name}`} style={{ cursor: 'grab', touchAction: 'none' }} onPointerDown={(e) => startDrag(e, i)} data-testid={`showcase-grip-${x.id}`}><GripVertical aria-hidden="true" size={16} /></button>
+              <span className="adm-sub" style={{ width: 20 }}>{i + 1}</span>
+              <img src={x.logoUrl} alt="" style={{ height: 32, width: 72, objectFit: 'contain', background: '#fff' }} />
+              <span className="grow"><b>{x.name}</b><small>{x.type}</small></span>
+              <button type="button" className="adm-icon-btn" aria-label={`Move ${x.name} up`} disabled={i === 0} onClick={() => move(i, i - 1)} data-testid={`showcase-up-${x.id}`}><ArrowUp aria-hidden="true" /></button>
+              <button type="button" className="adm-icon-btn" aria-label={`Move ${x.name} down`} disabled={i === list.length - 1} onClick={() => move(i, i + 1)} data-testid={`showcase-down-${x.id}`}><ArrowDown aria-hidden="true" /></button>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
   );
 }
 

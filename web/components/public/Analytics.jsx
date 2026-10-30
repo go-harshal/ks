@@ -39,8 +39,17 @@ function Tracker() {
       setConsent(ok);
       if (!ok && window.gtag) window.gtag('consent', 'update', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
     };
+    // Enquiry submitted → GA4 "generate_lead" (mark it as a key event in GA). Only form type and pages; never form contents.
+    const onConversion = (e) => {
+      if (!GA_ID || !hasConsent()) return;
+      Promise.resolve(loadGa()).then(() => {
+        window.gtag('consent', 'update', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+        window.gtag('event', 'generate_lead', { form_type: String(e.detail?.form || 'unknown'), page_path: window.location.pathname, landing_page: sessionStorage.getItem('ks-landing') || window.location.pathname });
+      }).catch(() => {});
+    };
     window.addEventListener('ks-consent-change', onChange);
-    return () => window.removeEventListener('ks-consent-change', onChange);
+    window.addEventListener('ks-conversion', onConversion);
+    return () => { window.removeEventListener('ks-consent-change', onChange); window.removeEventListener('ks-conversion', onConversion); };
   }, []);
 
   useEffect(() => {

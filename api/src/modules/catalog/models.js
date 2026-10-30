@@ -13,6 +13,7 @@ const Service = model(
     intro: String,
     capabilities: [{ _id: false, title: String, description: String }],
     technologies: [String],
+    heroImageId: String,
     priority: { type: Boolean, default: false },
     order: { type: Number, default: 0 },
     status: { type: String, enum: PUBLICATION, default: 'draft' },

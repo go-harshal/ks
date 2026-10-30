@@ -5,7 +5,9 @@ import BackToTop from '@/components/public/BackToTop';
 import { FOOTER } from '@/lib/nav';
 import s from './Footer.module.css';
 
-export default function Footer({ settings }) {
+export default function Footer({ settings, services, roles }) {
+  const svcLinks = services?.length ? [...services].sort((a, b) => Number(!!b.priority) - Number(!!a.priority)).slice(0, 5).map((x) => ({ label: x.name, href: `/services/${x.slug}` })) : FOOTER.services;
+  const hireLinks = roles?.length ? roles.slice(0, 6).map((x) => ({ label: x.name, href: `/hire-developers/${x.slug}` })) : FOOTER.hire;
   const year = new Date().getFullYear();
   const email = settings?.contact?.email;
   const wa = settings?.whatsapp;
@@ -33,11 +35,11 @@ export default function Footer({ settings }) {
           </div>
           <div>
             <p className={s.colTitle}>Services</p>
-            <ul>{FOOTER.services.map((l) => <li key={l.href}><Link href={l.href} className={s.link} data-testid={`footer-service-${l.href.split('/').pop()}`}>{l.label}</Link></li>)}</ul>
+            <ul>{svcLinks.map((l) => <li key={l.href}><Link href={l.href} className={s.link} data-testid={`footer-service-${l.href.split('/').pop()}`}>{l.label}</Link></li>)}</ul>
           </div>
           <div>
             <p className={s.colTitle}>Hire Developers</p>
-            <ul>{FOOTER.hire.map((l) => <li key={l.href}><Link href={l.href} className={s.link} data-testid={`footer-hire-${l.href.split('/').pop()}`}>{l.label}</Link></li>)}</ul>
+            <ul>{hireLinks.map((l) => <li key={l.href}><Link href={l.href} className={s.link} data-testid={`footer-hire-${l.href.split('/').pop()}`}>{l.label}</Link></li>)}</ul>
           </div>
           <div>
             <p className={s.colTitle}>Get in Touch</p>

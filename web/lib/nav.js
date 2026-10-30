@@ -29,6 +29,14 @@ export const SERVICE_GROUPS = [
   },
 ];
 
+/** Group live services (already sorted by admin order) for the menu and lists; falls back to the static list. */
+export function groupServices(services) {
+  if (!services?.length) return SERVICE_GROUPS;
+  const map = new Map();
+  for (const sv of services) { if (!map.has(sv.group)) map.set(sv.group, []); map.get(sv.group).push({ name: sv.name, slug: sv.slug }); }
+  return [...map].map(([title, items]) => ({ title, items }));
+}
+
 export const PRIMARY_NAV = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },

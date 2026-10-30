@@ -2,7 +2,7 @@ import Link from 'next/link';
 import CTABand from '@/components/public/sections/CTABand';
 import { PageHero, SectionHead, pageStyles as s } from '@/components/public/sections/PageParts';
 import { getPublic } from '@/lib/api';
-import { SERVICE_GROUPS } from '@/lib/nav';
+import { groupServices } from '@/lib/nav';
 
 export const metadata = {
   title: 'Services — Software Development Services',
@@ -16,8 +16,8 @@ export default async function ServicesPage() {
   let n = 0;
   return (
     <>
-      <PageHero testId="services-hero" overline="Services" title="Eleven services, one accountable partner." lead="From a first website to a complex SaaS product, and from design through to long-term support." />
-      {SERVICE_GROUPS.map((g) => (
+      <PageHero testId="services-hero" overline="Services" title="Our services, one accountable partner." lead="From a first website to a complex SaaS product, and from design through to long-term support." />
+      {groupServices(services).map((g) => (
         <section key={g.title} className={s.section} aria-label={g.title} data-testid={`services-group-${g.title.toLowerCase().replace(/[^a-z]+/g, '-')}`}>
           <div className={`container ${s.split}`}>
             <SectionHead title={g.title} />

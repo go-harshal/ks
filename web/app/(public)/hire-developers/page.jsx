@@ -13,6 +13,8 @@ export const metadata = {
 
 const HIRE_IMG = 'https://images.pexels.com/photos/34804021/pexels-photo-34804021.jpeg?auto=compress&cs=tinysrgb&w=1400';
 
+const WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
+
 export default async function HireDevelopersPage() {
   const [catalog, settings] = await Promise.all([getPublic('/hiring-catalog'), getPublic('/settings')]);
   const { technologies = [], categories = [], levels = [], models = [], steps = [] } = catalog || {};
@@ -116,7 +118,7 @@ export default async function HireDevelopersPage() {
         <div className={`container ${s.modelsGrid}`}>
           <div className={s.modelsHead}>
             <p className="overline">Engagement models</p>
-            <h2 id="models-title" className={s.h2}>Six ways to engage.</h2>
+            <h2 id="models-title" className={s.h2}>{models.length > 0 ? `${WORDS[models.length] || models.length} ways to engage.` : 'Ways to engage.'}</h2>
             <p className={s.muted}>Pricing depends on role, seniority and duration. Share your requirement for a tailored quote.</p>
           </div>
           <dl className={s.models}>
@@ -136,7 +138,7 @@ export default async function HireDevelopersPage() {
         <div className={`container ${s.processGrid}`}>
           <div className={s.processHead}>
             <p className="overline">Hiring process</p>
-            <h2 id="hp-title" className={s.h2}>From requirement to an embedded developer in six steps.</h2>
+            <h2 id="hp-title" className={s.h2}>From requirement to an embedded developer in {(WORDS[steps.length] || String(steps.length)).toLowerCase()} steps.</h2>
           </div>
           <ol className={s.steps}>
             {steps.map((st) => (

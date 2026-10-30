@@ -7,7 +7,7 @@ import Logo from '@/components/shared/Logo';
 import { PRIMARY_NAV, PROJECT_CTA, SERVICE_GROUPS } from '@/lib/nav';
 import s from './Header.module.css';
 
-export default function Header({ industries = [] }) {
+export default function Header({ industries = [], serviceGroups = SERVICE_GROUPS }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
@@ -87,10 +87,10 @@ export default function Header({ industries = [] }) {
                     <div className={s.megaInner}>
                       <div className={s.megaIntro}>
                         <p className="overline">Services</p>
-                        <p className={s.megaLead}>Eleven service lines across product engineering, design and platform support.</p>
+                        <p className={s.megaLead}>Service lines across product engineering, design and platform support.</p>
                         <Link href="/services" className="text-link" data-testid="mega-all-services">All services <span aria-hidden="true">→</span></Link>
                       </div>
-                      {SERVICE_GROUPS.map((g) => (
+                      {serviceGroups.map((g) => (
                         <div key={g.title} className={s.megaCol}>
                           <p className={s.megaTitle}>{g.title}</p>
                           <ul>
@@ -167,7 +167,7 @@ export default function Header({ industries = [] }) {
         </ul>
         <div className={s.drawerServices}>
           <p className="overline">Services</p>
-          {SERVICE_GROUPS.map((g) => (
+          {serviceGroups.map((g) => (
             <div key={g.title}>
               <p className={s.megaTitle}>{g.title}</p>
               <ul>

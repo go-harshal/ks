@@ -16,6 +16,7 @@ const contentAdminRoutes = require('./modules/content/adminRoutes');
 const contentPublicRoutes = require('./modules/content/publicRoutes');
 const { newsletterPublic, newsletterAdmin } = require('./modules/newsletter/routes');
 const { analyticsPublic, analyticsAdmin } = require('./modules/analytics/routes');
+const catalogAdminRoutes = require('./modules/catalog/adminRoutes');
 const { partnerRoutes, publicPartnerRoutes } = require('./modules/partners/routes');
 const { requireAuth } = require('./middleware/auth');
 const { notFoundHandler, errorHandler } = require('./middleware/error');
@@ -50,6 +51,7 @@ v1.use('/admin', contentAdminRoutes);
 v1.use('/admin', newsletterAdmin);
 v1.use('/admin', analyticsAdmin);
 v1.use('/admin', partnerRoutes);
+v1.use('/admin', catalogAdminRoutes);
 
 app.use('/api/v1', v1);
 app.use('/api/cron', cronRoutes);

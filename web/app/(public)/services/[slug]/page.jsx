@@ -87,8 +87,10 @@ export default async function ServicePage({ params }) {
       </section>
       <div className={`container ${s.imageWrap}`}>
         <div className={s.image}>
-          <Image src={SERVICE_IMG} alt="Geometric light and shadow on a textured surface" fill sizes="(max-width: 960px) 100vw, 80vw" style={{ objectFit: 'cover' }} priority />
-          <span className="placeholder-tag">Placeholder image</span>
+          {svc.heroUrl
+            // eslint-disable-next-line @next/next/no-img-element
+            ? <img src={svc.heroUrl} alt={`${svc.name}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} data-testid="service-hero-image" />
+            : <><Image src={SERVICE_IMG} alt="Geometric light and shadow on a textured surface" fill sizes="(max-width: 960px) 100vw, 80vw" style={{ objectFit: 'cover' }} priority /><span className="placeholder-tag">Placeholder image</span></>}
         </div>
       </div>
 

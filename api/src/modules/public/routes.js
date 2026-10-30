@@ -37,7 +37,8 @@ router.get('/services', async (_req, res) => {
 router.get('/services/:slug', async (req, res) => {
   const doc = await Service.findOne({ slug: req.params.slug, status: 'published' }).select('-isPlaceholder').lean();
   if (!doc) throw notFound('Service not found');
-  res.json({ data: clean(doc) });
+  const { heroImageId, ...rest } = clean(doc);
+  res.json({ data: { ...rest, heroUrl: heroImageId ? `/api/v1/public/media/${heroImageId}` : null } });
 });
 
 router.get('/process-steps', async (_req, res) => {

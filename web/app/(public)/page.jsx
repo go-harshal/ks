@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPublic } from '@/lib/api';
-import { HIRING_CTA, PROJECT_CTA, SERVICE_GROUPS } from '@/lib/nav';
+import { HIRING_CTA, PROJECT_CTA, groupServices } from '@/lib/nav';
 import ProcessTimeline from '@/components/public/sections/ProcessTimeline';
 import ContentSlot from '@/components/public/sections/ContentSlot';
 import CTABand from '@/components/public/sections/CTABand';
@@ -32,7 +32,7 @@ export default async function HomePage() {
     getPublic('/settings'),
   ]);
 
-  const byGroup = SERVICE_GROUPS.map((g) => ({
+  const byGroup = groupServices(services || []).map((g) => ({
     title: g.title,
     items: (services || []).filter((x) => x.group === g.title),
   })).filter((g) => g.items.length);
@@ -94,7 +94,7 @@ export default async function HomePage() {
         <div className={`container ${s.servicesGrid}`}>
           <div className={s.servicesIntro}>
             <p className="overline">Our services</p>
-            <h2 id="services-title" className={s.h2}>Eleven service lines, one accountable team.</h2>
+            <h2 id="services-title" className={s.h2}>Our service lines, one accountable team.</h2>
             <p className="lead">From a first mobile release to modernising an existing platform, each service is delivered through the same seven-stage process.</p>
             <Link href="/services" className="text-link" data-testid="home-all-services-link">View all services <span aria-hidden="true">→</span></Link>
           </div>

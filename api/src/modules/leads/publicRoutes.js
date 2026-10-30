@@ -68,7 +68,7 @@ router.post('/enquiries', limiter, (req, res, next) => upload.single('attachment
   const lead = await Lead.create({
     type, contact: { name, email: em.toLowerCase(), company, website }, payload,
     attachments: fileId ? [fileId] : [],
-    source: { page: String(b.page || '').slice(0, 300), referrer: String(b.referrer || '').slice(0, 300), context: String(b.context || '').slice(0, 120),
+    source: { page: String(b.page || '').slice(0, 300), landing: String(b.landing || '').slice(0, 200), referrer: String(b.referrer || '').slice(0, 300), context: String(b.context || '').slice(0, 120),
       utm: ['utm_source', 'utm_medium', 'utm_campaign'].reduce((a, k) => (b[k] ? { ...a, [k]: String(b[k]).slice(0, 100) } : a), {}) },
     consent: { version: CONSENT_VERSION, at: new Date() },
     idempotencyKey,

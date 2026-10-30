@@ -75,6 +75,7 @@ router.get('/dashboard', async (req, res) => {
     extras.applications = { new: await Application.countDocuments({ status: 'New' }), total: await Application.countDocuments({}) };
   }
 
+  if (can(req.user, 'reports.view')) extras.analytics = true;
   res.json({ data: {
     scope: company ? 'company' : 'mine',
     range: { key: q.range, from: dayKey(from), to: dayKey(to) },

@@ -64,7 +64,7 @@ export default function EnquiryForm() {
     if (Object.keys(errs).length) { formRef.current?.querySelector(`[name="${Object.keys(errs)[0]}"]`)?.focus(); return; }
     if (file && !file.size) fd.delete('attachment');
     fd.set('type', type); fd.set('consent', 'true'); fd.set('startedAt', String(started.current)); fd.set('idempotencyKey', key.current);
-    fd.set('page', window.location.pathname + window.location.search); fd.set('referrer', document.referrer || ''); fd.set('context', serviceParam || '');
+    fd.set('page', window.location.pathname + window.location.search); fd.set('referrer', document.referrer || ''); fd.set('context', serviceParam || ''); fd.set('landing', sessionStorage.getItem('ks-landing') || '');
     const utm = new URLSearchParams(window.location.search); ['utm_source', 'utm_medium', 'utm_campaign'].forEach((k) => utm.get(k) && fd.set(k, utm.get(k)));
     setState({ kind: 'sending' });
     try {

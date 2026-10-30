@@ -10,7 +10,7 @@ const Lead = model('Lead', baseSchema({
   contact: { name: String, email: String, company: String, website: String },
   payload: Object,
   attachments: [String], // FileAsset ids
-  source: { page: String, referrer: String, utm: Object, context: String },
+  source: { page: String, landing: String, referrer: String, utm: Object, context: String },
   consent: { version: String, at: Date },
   assigneeId: { type: String, index: true },
   followUpAt: Date,

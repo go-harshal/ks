@@ -15,6 +15,8 @@ const dashboardRoutes = require('./modules/dashboard/routes');
 const contentAdminRoutes = require('./modules/content/adminRoutes');
 const contentPublicRoutes = require('./modules/content/publicRoutes');
 const { newsletterPublic, newsletterAdmin } = require('./modules/newsletter/routes');
+const { analyticsPublic, analyticsAdmin } = require('./modules/analytics/routes');
+const { partnerRoutes } = require('./modules/partners/routes');
 const { requireAuth } = require('./middleware/auth');
 const { notFoundHandler, errorHandler } = require('./middleware/error');
 
@@ -35,6 +37,7 @@ v1.use('/public', publicRoutes);
 v1.use('/public', enquiryRoutes);
 v1.use('/public', contentPublicRoutes);
 v1.use('/public', newsletterPublic);
+v1.use('/public', analyticsPublic);
 v1.use('/auth', authRoutes);
 v1.use('/admin', requireAuth, (req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
 v1.use('/admin', leadAdminRoutes);
@@ -44,6 +47,8 @@ v1.use('/admin', adminSystemRoutes);
 v1.use('/admin', dashboardRoutes);
 v1.use('/admin', contentAdminRoutes);
 v1.use('/admin', newsletterAdmin);
+v1.use('/admin', analyticsAdmin);
+v1.use('/admin', partnerRoutes);
 
 app.use('/api/v1', v1);
 app.use('/api/cron', cronRoutes);

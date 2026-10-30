@@ -6,6 +6,7 @@ import { ArrowUp, ArrowDown, EyeOff, RotateCcw, SlidersHorizontal } from 'lucide
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { api } from '@/lib/client';
 import StatusBadge from './StatusBadge';
+import AnalyticsPanel from './AnalyticsPanel';
 
 const RANGES = [
   { key: 'today', label: 'Today' }, { key: '7', label: 'Last 7 days' }, { key: '30', label: 'Last 30 days' },
@@ -20,6 +21,7 @@ const WIDGETS = {
   distribution: { title: 'Enquiries by type', span: 6 },
   recent: { title: 'Recent enquiries', span: 6 },
   workqueue: { title: 'Content & careers queue', span: 12 },
+  analytics: { title: 'Website visits & top pages', span: 12 },
 };
 const DEFAULT_LAYOUT = Object.keys(WIDGETS).map((id) => ({ id, visible: true }));
 const LAYOUT_KEY = 'ks-dashboard-layout-v2';
@@ -168,6 +170,7 @@ export default function Dashboard() {
         )}
       </div>
     ),
+    analytics: () => <AnalyticsPanel key={range === 'custom' ? '30' : range} range={range === 'custom' ? '30' : range} compact />,
     workqueue: () => (
       <div className="adm-kpis" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }} data-testid="widget-workqueue">
         {data.reviewQueue && <>
@@ -179,7 +182,7 @@ export default function Dashboard() {
     ),
   };
 
-  const visible = layout.filter((w) => w.visible && (w.id !== 'workqueue' || hasQueue));
+  const visible = layout.filter((w) => w.visible && (w.id !== 'workqueue' || hasQueue) && (w.id !== 'analytics' || data.analytics));
   const rangeLabel = RANGES.find((r) => r.key === range).label.toLowerCase();
 
   return (

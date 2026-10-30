@@ -20,9 +20,9 @@ const MODULES = [
   { label: 'Careers & Applications', href: '/phobos/careers', icon: GraduationCap, ready: true, perm: ['content.manage', 'content.draft', 'applications.manage'] },
   { label: 'Team & Founder Profiles', href: '/phobos/team', icon: UserSquare2, ready: true, perm: ['content.manage', 'content.draft'] },
   { label: 'Testimonials', href: '/phobos/testimonials', icon: Quote, ready: true, perm: ['content.manage', 'content.draft'] },
-  { label: 'Partnerships', icon: Handshake },
+  { label: 'Partnerships', href: '/phobos/partners', icon: Handshake, ready: true, perm: 'partners.manage' },
   { label: 'Newsletter', href: '/phobos/newsletter', icon: Mail, ready: true, perm: ['newsletter.manage', 'newsletter.draft'] },
-  { label: 'Analytics & Reports', icon: BarChart3 },
+  { label: 'Analytics & Reports', href: '/phobos/analytics', icon: BarChart3, ready: true, perm: 'reports.view' },
   { label: 'User & Role Management', href: '/phobos/users', icon: ShieldCheck, ready: true, perm: 'users.manage' },
   { label: 'Website Settings', href: '/phobos/settings', icon: Settings, ready: true, perm: 'settings.manage' },
 ];

@@ -13,7 +13,7 @@ const toLocalInput = (d) => (d ? new Date(new Date(d).getTime() - new Date().get
 
 export default function LeadsTable() {
   const params = useSearchParams();
-  const [f, setF] = useState({ q: '', type: '', status: params.get('status') || '', assignee: '' });
+  const [f, setF] = useState({ q: '', type: params.get('type') || '', status: params.get('status') || '', assignee: '' });
   const [page, setPage] = useState(1);
   const [res, setRes] = useState({ data: [], meta: { total: 0, limit: 20 } });
   const [state, setState] = useState('loading');
@@ -96,6 +96,7 @@ function LeadDrawer({ id, onClose, onChange, assignees }) {
       <aside className="adm-drawer" role="dialog" aria-modal="true" aria-labelledby="lead-title" data-testid="lead-detail-drawer">
         <header>
           <div style={{ flex: 1 }}><p className="adm-type">{lead?.type} enquiry</p><h2 id="lead-title" className="adm-h1" style={{ fontSize: '1.3rem' }}>{lead ? lead.contact?.company || lead.contact?.name : 'Loading…'}</h2></div>
+          {lead?.type === 'partnership' && <button type="button" className="adm-btn" onClick={() => act(async () => { const r = await api(`/admin/partners/from-lead/${id}`, { method: 'POST' }); window.location.href = `/phobos/partners?open=${r.data.id}`; })} data-testid="lead-create-partner-button">Create partner</button>}
           <button type="button" className="adm-icon-btn" aria-label="Close" onClick={onClose} data-testid="lead-detail-close"><X aria-hidden="true" /></button>
         </header>
         {lead && (

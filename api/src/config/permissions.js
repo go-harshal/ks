@@ -5,12 +5,12 @@ const SUPER_ONLY = ['users.manage', 'settings.manage', 'backups.manage', 'privac
 
 const ROLE_PERMS = {
   super_admin: ['*'],
-  admin: ['content.manage', 'leads.view_all', 'leads.assign', 'leads.export', 'reports.view', 'applications.manage', 'newsletter.manage'],
+  admin: ['content.manage', 'leads.view_all', 'leads.assign', 'leads.export', 'reports.view', 'applications.manage', 'newsletter.manage', 'partners.manage'],
   team_member: ['leads.view_assigned', 'content.draft', 'newsletter.draft'],
 };
 
 // Extra permissions a Super Admin may grant per user (never Super-only ones to Team Members).
-const GRANTABLE = ['leads.export', 'leads.assign', 'leads.view_all', 'applications.manage', 'newsletter.manage', 'reports.view', 'content.manage', 'users.manage', 'settings.manage'];
+const GRANTABLE = ['partners.manage', 'leads.export', 'leads.assign', 'leads.view_all', 'applications.manage', 'newsletter.manage', 'reports.view', 'content.manage', 'users.manage', 'settings.manage'];
 
 function permsFor(user) {
   const base = ROLE_PERMS[user.role] || [];

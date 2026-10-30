@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import {
   LayoutDashboard, Inbox, Briefcase, Layers, Users, PenLine, GraduationCap, UserSquare2, Quote,
-  Handshake, Mail, BarChart3, ShieldCheck, Settings, Bell, Sun, Moon, Menu,
+  Handshake, Mail, BarChart3, ShieldCheck, Settings, Bell, Sun, Moon, Menu, Volume2, VolumeX, X,
 } from 'lucide-react';
 import { api } from '@/lib/client';
+import { useNotifications, timeAgo } from './useNotifications';
 
 const MODULES = [
   { label: 'Dashboard', href: '/phobos', icon: LayoutDashboard, ready: true },
@@ -23,14 +24,7 @@ const MODULES = [
   { label: 'Newsletter Subscribers', icon: Mail },
   { label: 'Analytics & Reports', icon: BarChart3 },
   { label: 'User & Role Management', href: '/phobos/users', icon: ShieldCheck, ready: true, perm: 'users.manage' },
-  { label: 'Website Settings', icon: Settings },
-];
-
-const SAMPLE_NOTIFS = [
-  { t: 'New project enquiry — Sample Company C', at: '4 min ago', unread: true },
-  { t: 'Lead SMP-1004 assigned to you', at: '38 min ago', unread: true },
-  { t: 'Follow-up overdue — Sample Company H', at: '2 h ago', unread: true },
-  { t: 'New newsletter subscription confirmed', at: 'Yesterday', unread: false },
+  { label: 'Website Settings', href: '/phobos/settings', icon: Settings, ready: true, perm: 'settings.manage' },
 ];
 
 export default function AdminShell({ title, children }) {
@@ -51,13 +45,13 @@ export default function AdminShell({ title, children }) {
     try { await api('/auth/logout', { method: 'POST' }); } catch { /* already signed out */ }
     window.location.href = `/phobos/login${reason === 'idle' ? '?next=/phobos' : ''}`;
   }
-  const canUsers = me && (me.permissions.includes('*') || me.permissions.includes('users.manage'));
+  const has = (p) => !!me && (me.permissions.includes('*') || me.permissions.includes(p));
 
   const [theme, setTheme] = useState('light');
   const [sideOpen, setSideOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
-  const [notifs, setNotifs] = useState(SAMPLE_NOTIFS);
   const bellRef = useRef(null);
+  const nt = useNotifications(!!me);
 
   useEffect(() => { setTheme(document.documentElement.getAttribute('data-admin-theme') || 'light'); }, []);
   useEffect(() => {
@@ -72,9 +66,8 @@ export default function AdminShell({ title, children }) {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
     document.documentElement.setAttribute('data-admin-theme', next);
-    localStorage.setItem('ks-admin-theme', next); // per-user server persistence arrives with auth in Phase 4a
+    localStorage.setItem('ks-admin-theme', next);
   }
-  const unread = notifs.filter((n) => n.unread).length;
   if (!me) return <div className="adm" style={{ gridTemplateColumns: '1fr', placeItems: 'center' }} data-testid="admin-auth-loading"><p className="adm-sub">Checking your session…</p></div>;
 
   return (
@@ -89,10 +82,10 @@ export default function AdminShell({ title, children }) {
           {MODULES.map((m) => {
             const Icon = m.icon;
             const slug = m.label.toLowerCase().replace(/[^a-z]+/g, '-');
-            if (m.perm === 'users.manage' && !canUsers) return null;
+            if (m.perm && !has(m.perm)) return null;
             if (!m.ready) {
               return (
-                <span key={m.label} className="adm-nav-item" aria-disabled="true" title="Built in Phase 4" data-testid={`admin-nav-${slug}`}>
+                <span key={m.label} className="adm-nav-item" aria-disabled="true" title="Built in a later phase" data-testid={`admin-nav-${slug}`}>
                   <Icon aria-hidden="true" />{m.label}<span className="adm-soon">Phase 4</span>
                 </span>
               );
@@ -109,30 +102,43 @@ export default function AdminShell({ title, children }) {
 
       <div className="adm-main">
         <p className="adm-preview" role="note" data-testid="admin-preview-banner">
-          <strong>In progress.</strong> Leads, users and your profile use real data. Dashboard widgets and notifications still show SAMPLE data until Phase 4e/4f. Emails are MOCKED (logged) until SMTP is configured.
+          <strong>In progress.</strong> Leads, users, notifications and your profile use real data. Dashboard widgets still show SAMPLE data.
         </p>
         <header className="adm-top">
           <button type="button" className="adm-icon-btn adm-burger" aria-label="Open navigation" onClick={() => setSideOpen((v) => !v)} data-testid="admin-sidebar-toggle"><Menu aria-hidden="true" /></button>
           <p className="adm-crumb">Phobos / <b>{title}</b></p>
           <div className="adm-top-actions">
+            <span className={`adm-live ${nt.live ? 'on' : ''}`} title={nt.live ? 'Live alerts connected' : 'Reconnecting live alerts…'} data-testid="admin-live-indicator">
+              <span aria-hidden="true" />{nt.live ? 'Live' : 'Offline'}
+            </span>
             <div style={{ position: 'relative' }} ref={bellRef}>
-              <button type="button" className="adm-icon-btn" aria-label={`Notifications, ${unread} unread`} aria-expanded={bellOpen} onClick={() => setBellOpen((v) => !v)} data-testid="admin-notification-bell">
+              <button type="button" className="adm-icon-btn" aria-label={`Notifications, ${nt.unread} unread`} aria-expanded={bellOpen} onClick={() => setBellOpen((v) => !v)} data-testid="admin-notification-bell">
                 <Bell aria-hidden="true" />
-                {unread > 0 && <span className="adm-badge-count" data-testid="admin-unread-count">{unread}</span>}
+                {nt.unread > 0 && <span className="adm-badge-count" data-testid="admin-unread-count">{nt.unread > 99 ? '99+' : nt.unread}</span>}
               </button>
               {bellOpen && (
                 <div className="adm-popover" role="dialog" aria-label="Notifications" data-testid="admin-notification-panel">
                   <header>
                     Notifications
-                    <button type="button" className="adm-btn" style={{ height: 28 }} onClick={() => setNotifs((n) => n.map((x) => ({ ...x, unread: false })))} data-testid="admin-mark-all-read">Mark all read</button>
+                    <span style={{ display: 'flex', gap: 6 }}>
+                      <button type="button" className="adm-icon-btn" style={{ width: 28, height: 28 }} onClick={nt.toggleSound} aria-label={nt.sound ? 'Mute alert sound' : 'Turn on alert sound'} aria-pressed={nt.sound} data-testid="admin-alert-sound-toggle">
+                        {nt.sound ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
+                      </button>
+                      <button type="button" className="adm-btn" style={{ height: 28 }} onClick={nt.markAll} disabled={!nt.unread} data-testid="admin-mark-all-read">Mark all read</button>
+                    </span>
                   </header>
-                  <ul>
-                    {notifs.map((n, i) => (
-                      <li key={n.t} className={n.unread ? 'unread' : ''}>
-                        <button type="button" style={{ all: 'unset', cursor: 'pointer' }} onClick={() => setNotifs((arr) => arr.map((x, j) => (j === i ? { ...x, unread: false } : x)))} data-testid={`admin-notification-${i}`}>
-                          {n.t}
-                        </button>
-                        <small>{n.at}</small>
+                  {nt.desktop === 'default' && (
+                    <button type="button" className="adm-desktop-cta" onClick={nt.enableDesktop} data-testid="admin-enable-desktop-alerts">Turn on desktop alerts for when Phobos is in the background</button>
+                  )}
+                  {nt.desktop === 'denied' && <p className="adm-desktop-note" data-testid="admin-desktop-denied">Desktop alerts are blocked in this browser’s site settings.</p>}
+                  <ul data-testid="admin-notification-list">
+                    {nt.items.length === 0 && <li><span className="adm-sub">No notifications yet.</span></li>}
+                    {nt.items.map((n) => (
+                      <li key={n.id} className={n.unread ? 'unread' : ''}>
+                        <Link href={n.link || '/phobos/leads'} style={{ color: 'inherit' }} onClick={() => { nt.markRead(n.id); setBellOpen(false); }} data-testid={`admin-notification-${n.id}`}>
+                          {n.title}
+                        </Link>
+                        <small>{timeAgo(n.createdAt)}</small>
                       </li>
                     ))}
                   </ul>
@@ -150,6 +156,20 @@ export default function AdminShell({ title, children }) {
           </div>
         </header>
         <div className="adm-content">{children}</div>
+      </div>
+
+      <div className="adm-toasts" aria-live="polite" aria-atomic="false" data-testid="admin-toast-region">
+        {nt.toasts.map((t) => (
+          <div key={t.id} className="adm-toast" role="status" data-testid="admin-lead-toast">
+            <span className="adm-toast-dot" aria-hidden="true" />
+            <div className="adm-toast-body">
+              <b>{t.title}</b>
+              {t.body && <small>{t.body}</small>}
+              <Link href={t.link || '/phobos/leads'} onClick={() => { nt.markRead(t.id); nt.dismiss(t.id); }} data-testid="admin-lead-toast-open">Open lead →</Link>
+            </div>
+            <button type="button" className="adm-toast-close" aria-label="Dismiss alert" onClick={() => nt.dismiss(t.id)} data-testid="admin-lead-toast-dismiss"><X aria-hidden="true" /></button>
+          </div>
+        ))}
       </div>
     </div>
   );

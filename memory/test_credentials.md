@@ -4,7 +4,7 @@ Admin portal: https://softbizz--8sja0ju5.preview.emergentagent.com/phobos/login
 
 | Role | Email | Password |
 |---|---|---|
-| Super Admin | admin@kreyszigg.com | Kreyszigg#Admin2026 |
+| Super Admin | admin@kreyszigg.com | Set by the owner via password reset on 2026-10-30 — NOT known to the agent. Do not reset it; ask the owner or use the Team Member account. |
 | Team Member (test) | team.a@example.com | TeamMember#2026x |
 
 Notes:

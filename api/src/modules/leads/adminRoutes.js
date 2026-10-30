@@ -8,6 +8,7 @@ const { HttpError, notFound } = require('../../utils/errors');
 const { readPrivate } = require('../../providers/storage');
 const { sendEmail } = require('../../providers/email');
 
+const { notify } = require('../notifications/service');
 const router = Router();
 
 // Record-level scope: Team Members see only leads assigned to them.
@@ -100,7 +101,9 @@ router.post('/leads/:id/assign', authorize('leads.assign'), async (req, res) => 
   lead.assigneeId = assignee?._id || null;
   await lead.save();
   if (assignee) await sendEmail({ event: 'lead.assigned', to: assignee.email, dedupeKey: `lead.assigned:${lead._id}:${assignee._id}:${lead.history.length}`,
-    subject: `Lead assigned to you — ${lead.contact?.company || lead.contact?.name}`, text: `Open in Phobos: /phobos/leads?open=${lead._id}` });
+    subject: `Lead assigned to you — ${lead.contact?.company || lead.contact?.name}`, text: `${req.user.name} assigned a ${lead.type} lead to you.\n\nOpen in Phobos: /phobos/leads?open=${lead._id}` });
+  if (assignee && assignee._id !== req.user._id) await notify({ kind: 'lead.assigned', userId: assignee._id, leadId: lead._id, link: `/phobos/leads?open=${lead._id}`,
+    title: `Lead assigned to you — ${lead.contact?.company || lead.contact?.name}`, body: `by ${req.user.name}` });
   res.json({ data: view(lead.toObject(), await userNames()) });
 });
 

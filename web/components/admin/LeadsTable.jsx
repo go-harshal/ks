@@ -26,6 +26,7 @@ export default function LeadsTable() {
     setState('loading');
     api(`/admin/leads?${qs}`).then((r) => { setRes(r); setState('ok'); }).catch(() => setState('error'));
   }, [qs]);
+  useEffect(() => { const h = () => load(); window.addEventListener('ks:leads-changed', h); return () => window.removeEventListener('ks:leads-changed', h); }, [load]);
   useEffect(() => { const t = setTimeout(load, 250); return () => clearTimeout(t); }, [load]);
   useEffect(() => {
     api('/auth/me').then((r) => {

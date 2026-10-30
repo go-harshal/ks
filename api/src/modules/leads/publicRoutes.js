@@ -6,7 +6,8 @@ const { z, parse } = require('../../middleware/validate');
 const { badRequest } = require('../../utils/errors');
 const { putPrivate } = require('../../providers/storage');
 const { sendEmail } = require('../../providers/email');
-const { User } = require('../auth/models');
+const { notify } = require('../notifications/service');
+const env = require('../../config/env');
 
 const router = Router();
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -75,10 +76,13 @@ router.post('/enquiries', limiter, (req, res, next) => upload.single('attachment
   });
   if (fileId) await FileAsset.updateOne({ _id: fileId }, { owner: { type: 'lead', id: lead._id } });
 
-  // Notify Super Admin + Admin (email MOCKED via log driver until SMTP is configured). In-app notifications: Phase 4f.
-  const recipients = await User.find({ status: 'active', role: { $in: ['super_admin', 'admin'] } }).select('email').lean();
-  await Promise.all(recipients.map((r) => sendEmail({ event: `lead.created.${type}`, to: r.email, dedupeKey: `lead.created:${lead._id}:${r._id}`,
-    subject: `New ${LABELS[type]} — ${company || name}`, text: `A new ${LABELS[type]} was received. Open it in Phobos: /phobos/leads?open=${lead._id}` })));
+  // Email alert to the company inbox (EMAIL_ALERT_TO) + live in-app alert for users who can see all leads.
+  const who = company || name;
+  const summary = [`Type: ${LABELS[type]}`, `Name: ${name}`, `Email: ${em}`, company && `Company: ${company}`, fileId && 'Attachment: yes (download in Phobos)'].filter(Boolean).join('\n');
+  await sendEmail({ event: `lead.created.${type}`, to: env.alertTo, dedupeKey: `lead.created:${lead._id}`,
+    subject: `New ${LABELS[type]} — ${who}`, text: `A new ${LABELS[type]} was received on the website.\n\n${summary}\n\nOpen it in Phobos: /phobos/leads?open=${lead._id}` });
+  await notify({ kind: 'lead.created', perm: 'leads.view_all', leadId: lead._id, link: `/phobos/leads?open=${lead._id}`,
+    title: `New ${LABELS[type]} — ${who}`, body: payload.projectType || payload.role || payload.partnershipType || payload.subject || '' });
 
   res.status(201).json({ data: { id: lead._id } });
 });

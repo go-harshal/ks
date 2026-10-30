@@ -1,0 +1,8 @@
+crons:
+  - name: email-retry
+    description: "Retries website emails (invites, resets, enquiry alerts) that failed to send, every 15 minutes"
+    cron: "*/15 * * * *"
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    endpoint: "{{BASE_URL}}/api/cron/email-retry"
+    method: POST
+    enabled: true

@@ -4,6 +4,7 @@ import CTABand from '@/components/public/sections/CTABand';
 import { PageHero, EmptyState, SectionHead, pageStyles as s } from '@/components/public/sections/PageParts';
 import { getPublic } from '@/lib/api';
 
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'About Us — Software Development & Technology Talent Partner',
   description: 'Kreyszigg Softbizz delivers software development projects and provides dedicated developers and teams on demand.',
@@ -11,7 +12,8 @@ export const metadata = {
 };
 
 export default async function AboutPage() {
-  const [steps, settings] = await Promise.all([getPublic('/process-steps'), getPublic('/settings')]);
+  const [steps, settings, teamData] = await Promise.all([getPublic('/process-steps'), getPublic('/settings'), getPublic('/team', { revalidate: 0 })]);
+  const team = teamData || [];
   return (
     <>
       <PageHero
@@ -44,14 +46,31 @@ export default async function AboutPage() {
       </section>
 
       <section className={s.section} id="team" aria-labelledby="team-title" data-testid="about-team">
-        <div className={`container ${s.split}`}>
-          <SectionHead overline="Our team" title="The people behind the work." />
-          <EmptyState
-            testId="about-team-empty"
-            title="Team profiles are on their way."
-            body="Founder and team profiles will be published here once they are ready. In the meantime, we are happy to introduce the people who would work on your project."
-            actions={[{ label: 'Talk to us', href: '/contact?type=contact' }, { label: 'View careers', href: '/careers' }]}
-          />
+        <div className="container">
+          <div className={s.split} style={{ marginBottom: team.length ? 40 : 0 }}>
+            <SectionHead overline="Our team" title="The people behind the work." />
+            {team.length === 0 && (
+              <EmptyState testId="about-team-empty" title="Team profiles are on their way."
+                body="Founder and team profiles will be published here once they are ready. In the meantime, we are happy to introduce the people who would work on your project."
+                actions={[{ label: 'Talk to us', href: '/contact?type=contact' }, { label: 'View careers', href: '/careers' }]} />
+            )}
+          </div>
+          {[['Founders', team.filter((p) => p.isFounder)], ['Team', team.filter((p) => !p.isFounder)]].filter(([, list]) => list.length).map(([group, list]) => (
+            <div key={group} className={s.teamGroup}>
+              {team.some((p) => p.isFounder) && <p className="overline">{group}</p>}
+              <ul className={`${s.team} ${group === 'Founders' ? s.teamFounders : ''}`} data-testid={`about-team-${group.toLowerCase()}`}>
+                {list.map((p) => (
+                  <li key={p.id} id={`team-${p.slug}`} className={s.person} data-testid={`team-profile-${p.slug}`}>
+                    <span className={s.photo}>{p.photoUrl ? <img src={p.photoUrl} alt={p.name} loading="lazy" /> : <span aria-hidden="true">{p.name.split(' ').map((x) => x[0]).join('').slice(0, 2)}</span>}</span>
+                    <span className={s.personName}>{p.name}</span>
+                    <span className={s.personRole}>{p.title}</span>
+                    {p.bio && <p className={s.personBio}>{p.bio}</p>}
+                    {p.linkedin && <a href={p.linkedin} target="_blank" rel="noopener noreferrer" className="text-link" data-testid={`team-linkedin-${p.slug}`}>LinkedIn<span className="visually-hidden"> profile of {p.name} (opens in a new tab)</span></a>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
 

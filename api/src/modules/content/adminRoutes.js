@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const multer = require('multer');
-const { CaseStudy, Job, Application, APPLICATION_STATUSES, WORK_MODES, EMPLOYMENT_TYPES } = require('./models');
+const sanitizeHtml = require('sanitize-html');
+const { Article, TeamProfile, CaseStudy, Job, Application, APPLICATION_STATUSES, WORK_MODES, EMPLOYMENT_TYPES } = require('./models');
 const { FileAsset } = require('../leads/models');
 const { contentRoutes } = require('./factory');
 const { authorize } = require('../../middleware/auth');
@@ -35,6 +36,35 @@ const jobSchema = z.object({
 
 router.use(contentRoutes({ base: 'case-studies', Model: CaseStudy, schema: caseStudySchema, check: checkCaseStudy, label: 'Case study', adminPath: '/phobos/case-studies', publicPath: '/work' }));
 router.use(contentRoutes({ base: 'jobs', Model: Job, schema: jobSchema, label: 'Job post', adminPath: '/phobos/careers', publicPath: '/careers' }));
+
+// ---- Insights articles: rich text is sanitised server-side to a small allow-list ----
+const clean = (html) => sanitizeHtml(html, {
+  allowedTags: ['p', 'h2', 'h3', 'strong', 'b', 'em', 'i', 'ul', 'ol', 'li', 'a', 'blockquote', 'br'],
+  allowedAttributes: { a: ['href'] },
+  allowedSchemes: ['http', 'https', 'mailto'],
+  transformTags: { b: 'strong', i: 'em', h1: 'h2', div: 'p', a: sanitizeHtml.simpleTransform('a', { rel: 'noopener noreferrer' }) },
+  exclusiveFilter: (f) => ['p', 'li', 'h2', 'h3'].includes(f.tag) && !f.text.trim(),
+});
+const articleSchema = z.object({
+  title: t(160, 3), slug, category: o(60), excerpt: t(400, 10), featured: z.boolean().default(false),
+  tags: z.union([z.array(t(40, 1)).max(15), z.string().max(600).transform((v) => v.split(',').map((x) => x.trim()).filter(Boolean).slice(0, 15))]).default([]),
+  body: z.string().max(200000).default('').transform(clean),
+  coverImageId: o(64), authorProfileId: o(64), seoTitle: o(70), seoDescription: o(170),
+});
+const checkArticle = (d) => {
+  if (d.body !== undefined) {
+    const words = sanitizeHtml(d.body || '', { allowedTags: [] }).split(/\s+/).filter(Boolean).length;
+    d.readingMinutes = Math.max(1, Math.round(words / 220));
+  }
+};
+router.use(contentRoutes({ base: 'articles', Model: Article, schema: articleSchema, check: checkArticle, label: 'Article', adminPath: '/phobos/insights', publicPath: '/insights' }));
+
+// ---- Team & founder profiles ----
+const profileSchema = z.object({
+  name: t(120, 2), slug, title: t(120, 2), bio: o(2000), photoId: o(64), linkedin: z.union([z.literal(''), z.string().trim().max(300).url('Enter a full link starting with https://')]).optional().default(''),
+  isFounder: z.boolean().default(false), order: z.coerce.number().int().min(0).max(999).default(100),
+});
+router.use(contentRoutes({ base: 'team', Model: TeamProfile, schema: profileSchema, label: 'Profile', slugFrom: 'name', adminPath: '/phobos/team', publicPath: '/about#team' }));
 
 // ---- Public image upload for content (cover images) ----
 const IMG = { png: (b) => b.subarray(0, 4).toString('hex') === '89504e47', jpg: (b) => b.subarray(0, 3).toString('hex') === 'ffd8ff', jpeg: (b) => b.subarray(0, 3).toString('hex') === 'ffd8ff', webp: (b) => b.subarray(0, 4).toString() === 'RIFF' && b.subarray(8, 12).toString() === 'WEBP' };

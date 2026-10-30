@@ -5,6 +5,7 @@ const { authorize } = require('../../middleware/auth');
 const { verifyTransport, sendEmail, processDue, EmailDelivery } = require('../../providers/email');
 const { HttpError } = require('../../utils/errors');
 const { runFollowupReminders } = require('../reminders/service');
+const { runWeeklyDigest } = require('../reminders/weekly');
 
 // ---- Admin: email health (Super Admin / settings.manage) ----
 const admin = Router();
@@ -53,10 +54,15 @@ function cronJob(name, work) {
 }
 cronJob('email-retry', processDue);
 cronJob('followup-reminders', runFollowupReminders);
+cronJob('weekly-pipeline', runWeeklyDigest);
 
 // Manual run for Super Admins (same idempotent job; already-sent owners are skipped for today).
 admin.post('/system/reminders/run', authorize('settings.manage'), async (_req, res) => {
   res.json({ data: await runFollowupReminders() });
+});
+
+admin.post('/system/weekly/run', authorize('settings.manage'), async (_req, res) => {
+  res.json({ data: await runWeeklyDigest() });
 });
 
 module.exports = { adminSystemRoutes: admin, cronRoutes: cron };

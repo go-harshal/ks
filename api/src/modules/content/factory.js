@@ -19,7 +19,7 @@ async function uniqueSlug(Model, wanted, selfId) {
   return slug;
 }
 
-function contentRoutes({ base, Model, schema, label, adminPath, publicPath, check = () => {} }) {
+function contentRoutes({ base, Model, schema, label, adminPath, publicPath, check = () => {}, slugFrom = 'title' }) {
   const r = Router();
   const canPublish = (u) => can(u, 'content.manage');
   const canDraft = (u) => canPublish(u) || can(u, 'content.draft');
@@ -28,7 +28,7 @@ function contentRoutes({ base, Model, schema, label, adminPath, publicPath, chec
   const names = async () => Object.fromEntries((await User.find().select('name').lean()).map((x) => [x._id, x.name]));
   const view = (d, u, n = {}) => {
     const { _id, history, ...rest } = d;
-    return { ...rest, id: _id, authorName: n[d.authorId] || 'Unknown user', history: history || [], canEdit: editable(d, u), canPublish: canPublish(u), publicUrl: d.status === 'published' ? `${publicPath}/${d.slug}` : null };
+    return { ...rest, id: _id, authorName: n[d.authorId] || 'Unknown user', history: history || [], canEdit: editable(d, u), canPublish: canPublish(u), publicUrl: d.status === 'published' ? (publicPath.includes('#') ? `${publicPath}-${d.slug}` : `${publicPath}/${d.slug}`) : null };
   };
 
   r.use(`/${base}`, (req, _res, next) => { if (!canDraft(req.user)) throw forbidden(); next(); });
@@ -57,7 +57,7 @@ function contentRoutes({ base, Model, schema, label, adminPath, publicPath, chec
   r.post(`/${base}`, async (req, res) => {
     const data = parse(schema, req.body);
     check(data);
-    const doc = new Model({ ...data, slug: await uniqueSlug(Model, data.slug || data.title), status: 'draft', authorId: req.user._id });
+    const doc = new Model({ ...data, slug: await uniqueSlug(Model, data.slug || data[slugFrom]), status: 'draft', authorId: req.user._id });
     log(doc, 'created', req);
     await doc.save();
     res.status(201).json({ data: view(doc.toObject(), req.user, await names()) });
@@ -67,7 +67,7 @@ function contentRoutes({ base, Model, schema, label, adminPath, publicPath, chec
     const doc = await load(req);
     if (!editable(doc, req.user)) throw forbidden('Only drafts you wrote can be edited. Ask an Admin to change published items.');
     const data = parse(schema.partial(), req.body);
-    if (data.slug !== undefined || (data.title && !doc.slug)) data.slug = await uniqueSlug(Model, data.slug || data.title || doc.title, doc._id);
+    if (data.slug !== undefined || (data[slugFrom] && !doc.slug)) data.slug = await uniqueSlug(Model, data.slug || data[slugFrom] || doc[slugFrom], doc._id);
     else delete data.slug;
     Object.assign(doc, data);
     check(doc);

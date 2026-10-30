@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const multer = require('multer');
 const rateLimit = require('express-rate-limit');
-const { CaseStudy, Job, Application } = require('./models');
+const { Article, TeamProfile, CaseStudy, Job, Application } = require('./models');
 const { FileAsset } = require('../leads/models');
 const { z, parse } = require('../../middleware/validate');
 const { badRequest, notFound } = require('../../utils/errors');
@@ -26,6 +26,31 @@ router.get('/case-studies/:slug', async (req, res) => {
   if (!d) throw notFound('Case study not found');
   const { _id, clientName, clientDisplay, coverImageId, results, resultsVerified, ...rest } = d;
   res.json({ data: { ...rest, id: _id, client: clientDisplay === 'named' ? clientName : null, coverUrl: coverUrl(coverImageId), results: resultsVerified ? results : '' } });
+});
+
+// ---- Team profiles ----
+const profileView = ({ _id, photoId, ...p }) => ({ id: _id, name: p.name, slug: p.slug, title: p.title, bio: p.bio || '', linkedin: p.linkedin || '', isFounder: !!p.isFounder, photoUrl: coverUrl(photoId) });
+router.get('/team', async (_req, res) => {
+  const rows = await TeamProfile.find({ status: 'published' }).select('name slug title bio photoId linkedin isFounder order').sort({ isFounder: -1, order: 1, name: 1 }).lean();
+  res.json({ data: rows.map(profileView) });
+});
+
+// ---- Insights articles ----
+async function authors(ids) {
+  const list = await TeamProfile.find({ _id: { $in: ids.filter(Boolean) }, status: 'published' }).select('name slug title photoId').lean();
+  return Object.fromEntries(list.map((p) => [p._id, profileView(p)]));
+}
+router.get('/articles', async (_req, res) => {
+  const rows = await Article.find({ status: 'published' }).select('title slug category tags excerpt readingMinutes coverImageId authorProfileId featured publishedAt').sort({ featured: -1, publishedAt: -1 }).lean();
+  const a = await authors(rows.map((r) => r.authorProfileId));
+  res.json({ data: rows.map(({ _id, coverImageId, authorProfileId, ...r }) => ({ ...r, id: _id, coverUrl: coverUrl(coverImageId), author: a[authorProfileId] || null })) });
+});
+router.get('/articles/:slug', async (req, res) => {
+  const d = await Article.findOne({ slug: req.params.slug, status: 'published' }).select('-history -authorId -reviewNote').lean();
+  if (!d) throw notFound('Article not found');
+  const { _id, coverImageId, authorProfileId, ...rest } = d;
+  const a = await authors([authorProfileId]);
+  res.json({ data: { ...rest, id: _id, coverUrl: coverUrl(coverImageId), author: a[authorProfileId] || null } });
 });
 
 // ---- Jobs ----

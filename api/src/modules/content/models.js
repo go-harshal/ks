@@ -38,4 +38,15 @@ const Application = model('Application', baseSchema({
   history: [{ _id: false, kind: String, from: String, to: String, by: String, at: Date }],
 }), 'applications');
 
-module.exports = { CaseStudy, Job, Application, CONTENT_STATUSES, APPLICATION_STATUSES, WORK_MODES, EMPLOYMENT_TYPES };
+const Article = model('Article', baseSchema({
+  title: String, category: String, tags: [String], excerpt: String, body: String, readingMinutes: Number,
+  coverImageId: String, authorProfileId: String, featured: { type: Boolean, default: false }, seoTitle: String, seoDescription: String,
+  ...workflow,
+}), 'articles');
+
+const TeamProfile = model('TeamProfile', baseSchema({
+  name: String, title: String, bio: String, photoId: String, linkedin: String, isFounder: { type: Boolean, default: false }, order: { type: Number, default: 100 },
+  ...workflow,
+}), 'teamProfiles');
+
+module.exports = { Article, TeamProfile, CaseStudy, Job, Application, CONTENT_STATUSES, APPLICATION_STATUSES, WORK_MODES, EMPLOYMENT_TYPES };

@@ -16,9 +16,9 @@ const MODULES = [
   { label: 'Portfolio & Case Studies', href: '/phobos/case-studies', icon: Briefcase, ready: true, perm: ['content.manage', 'content.draft'] },
   { label: 'Services Management', icon: Layers },
   { label: 'Developer Categories', icon: Users },
-  { label: 'Blog / Insights', icon: PenLine },
+  { label: 'Blog / Insights', href: '/phobos/insights', icon: PenLine, ready: true, perm: ['content.manage', 'content.draft'] },
   { label: 'Careers & Applications', href: '/phobos/careers', icon: GraduationCap, ready: true, perm: ['content.manage', 'content.draft', 'applications.manage'] },
-  { label: 'Team & Founder Profiles', icon: UserSquare2 },
+  { label: 'Team & Founder Profiles', href: '/phobos/team', icon: UserSquare2, ready: true, perm: ['content.manage', 'content.draft'] },
   { label: 'Testimonials', icon: Quote },
   { label: 'Partnerships', icon: Handshake },
   { label: 'Newsletter Subscribers', icon: Mail },
@@ -102,7 +102,7 @@ export default function AdminShell({ title, children }) {
 
       <div className="adm-main">
         <p className="adm-preview" role="note" data-testid="admin-preview-banner">
-          <strong>In progress.</strong> Dashboard, leads, case studies, careers, users and notifications use real data. Other modules arrive in later phases.
+          <strong>In progress.</strong> Dashboard, leads, case studies, insights, team profiles, careers, users and notifications use real data. Other modules arrive in later phases.
         </p>
         <header className="adm-top">
           <button type="button" className="adm-icon-btn adm-burger" aria-label="Open navigation" onClick={() => setSideOpen((v) => !v)} data-testid="admin-sidebar-toggle"><Menu aria-hidden="true" /></button>

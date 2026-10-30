@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { X, Plus, ExternalLink } from 'lucide-react';
 import { api } from '@/lib/client';
+import RichText from './RichText';
 
 const STATUS = { draft: 'Draft', in_review: 'In review', published: 'Published', archived: 'Archived' };
 const fmt = (d) => (d ? new Date(d).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—');
@@ -23,7 +24,7 @@ export default function ContentManager({ base, label, plural, publicBase, fields
   }, [base, status, q]);
   useEffect(() => { const t = setTimeout(load, 200); return () => clearTimeout(t); }, [load]);
   useEffect(() => {
-    fields.filter((f) => f.optionsUrl).forEach((f) => fetch(f.optionsUrl).then((r) => r.json()).then((d) => setOpts((o) => ({ ...o, [f.name]: d.data.map((x) => [x.slug, x.name]) }))).catch(() => {}));
+    fields.filter((f) => f.optionsUrl).forEach((f) => fetch(f.optionsUrl).then((r) => r.json()).then((d) => setOpts((o) => ({ ...o, [f.name]: d.data.map((x) => [x[f.optionKey || 'slug'], x.name]) }))).catch(() => {}));
   }, [fields]);
 
   return (
@@ -75,10 +76,9 @@ function Editor({ id, base, label, fields, opts, onClose, onSaved }) {
     const fd = new FormData(form); const out = {};
     fields.forEach((f) => {
       if (f.type === 'checkbox') out[f.name] = fd.get(f.name) === 'on';
-      else if (f.type !== 'image') out[f.name] = String(fd.get(f.name) ?? '');
+      else if (f.type === 'image') out[f.name] = doc?.[f.name] || '';
+      else out[f.name] = String(fd.get(f.name) ?? '');
     });
-    out.coverImageId = doc?.coverImageId || '';
-    if (!fields.some((f) => f.name === 'coverImageId')) delete out.coverImageId;
     return out;
   };
 
@@ -89,11 +89,11 @@ function Editor({ id, base, label, fields, opts, onClose, onSaved }) {
   const save = (form) => run(() => api(isNew ? `/admin/${base}` : `/admin/${base}/${id}`, { method: isNew ? 'POST' : 'PATCH', body: collect(form) }), 'Saved.');
   const act = (action, ok, body) => run(() => api(`/admin/${base}/${doc.id}/${action}`, { method: 'POST', body: body || {} }), ok);
 
-  async function upload(e) {
+  async function upload(e, name) {
     const file = e.target.files?.[0]; if (!file) return;
     const fd = new FormData(); fd.set('file', file);
     setBusy(true); setMsg('');
-    try { const r = await api('/admin/media', { method: 'POST', form: fd }); setDoc((d) => ({ ...d, coverImageId: r.data.id })); setMsg('Image uploaded — save to keep it.'); } catch (err) { setMsg(err.message); } finally { setBusy(false); }
+    try { const r = await api('/admin/media', { method: 'POST', form: fd }); setDoc((d) => ({ ...d, [name]: r.data.id })); setMsg('Image uploaded — save to keep it.'); } catch (err) { setMsg(err.message); } finally { setBusy(false); }
   }
 
   const ro = doc && !doc.canEdit;
@@ -118,10 +118,11 @@ function Editor({ id, base, label, fields, opts, onClose, onSaved }) {
                 const fid = `cm-${f.name}`; const err = errors[f.name]; const v = doc[f.name];
                 const common = { id: fid, name: f.name, 'aria-invalid': Boolean(err), 'data-testid': `${base}-field-${f.name}` };
                 return (
-                  <div key={f.name} className="adm-field" style={{ gridColumn: f.full || f.type === 'textarea' ? '1 / -1' : undefined }}>
+                  <div key={f.name} className="adm-field" style={{ gridColumn: f.full || f.type === 'textarea' || f.type === 'richtext' ? '1 / -1' : undefined }}>
                     {f.type === 'checkbox' ? (
                       <label className="adm-check"><input type="checkbox" {...common} defaultChecked={Boolean(v)} />{f.label}</label>
                     ) : <label htmlFor={fid}>{f.label}{f.required && <span aria-hidden="true"> *</span>}</label>}
+                    {f.type === 'richtext' && <RichText name={f.name} initial={v || ''} testId={`${base}-field-${f.name}`} labelId={fid} />}
                     {f.type === 'textarea' && <textarea {...common} className="adm-textarea" rows={f.rows || 4} defaultValue={v || ''} />}
                     {f.type === 'select' && (
                       <select {...common} className="adm-select" defaultValue={v || f.default || ''}>
@@ -129,12 +130,12 @@ function Editor({ id, base, label, fields, opts, onClose, onSaved }) {
                         {(f.options || opts[f.name] || []).map((o) => { const [val, lab] = Array.isArray(o) ? o : [o, o]; return <option key={val} value={val}>{lab}</option>; })}
                       </select>
                     )}
-                    {['text', 'date'].includes(f.type) && <input {...common} type={f.type} className="adm-input" defaultValue={f.type === 'date' && v ? String(v).slice(0, 10) : Array.isArray(v) ? v.join(', ') : v || ''} />}
+                    {['text', 'date', 'number'].includes(f.type) && <input {...common} type={f.type} className="adm-input" defaultValue={f.type === 'date' && v ? String(v).slice(0, 10) : Array.isArray(v) ? v.join(', ') : v || ''} />}
                     {f.type === 'image' && (
                       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                        {doc.coverImageId ? <img src={`/api/v1/public/media/${doc.coverImageId}`} alt="Cover preview" style={{ width: 120, height: 72, objectFit: 'cover', border: '1px solid var(--a-border)' }} data-testid={`${base}-cover-preview`} /> : <span className="adm-sub">No image</span>}
-                        <input id={fid} type="file" accept=".png,.jpg,.jpeg,.webp" onChange={upload} data-testid={`${base}-field-cover-upload`} />
-                        {doc.coverImageId && <button type="button" className="adm-btn" onClick={() => setDoc((d) => ({ ...d, coverImageId: '' }))}>Remove</button>}
+                        {v ? <img src={`/api/v1/public/media/${v}`} alt="Image preview" style={{ width: 120, height: 72, objectFit: 'cover', border: '1px solid var(--a-border)' }} data-testid={`${base}-${f.name}-preview`} /> : <span className="adm-sub">No image</span>}
+                        <input id={fid} type="file" accept=".png,.jpg,.jpeg,.webp" onChange={(e) => upload(e, f.name)} data-testid={`${base}-field-${f.name}-upload`} />
+                        {v && <button type="button" className="adm-btn" onClick={() => setDoc((d) => ({ ...d, [f.name]: '' }))} data-testid={`${base}-${f.name}-remove`}>Remove</button>}
                       </div>
                     )}
                     {f.hint && <small className="adm-sub">{f.hint}</small>}

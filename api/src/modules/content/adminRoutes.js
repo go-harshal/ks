@@ -9,6 +9,7 @@ const { can } = require('../../config/permissions');
 const { z, parse } = require('../../middleware/validate');
 const { HttpError, notFound, badRequest } = require('../../utils/errors');
 const { putPrivate, readPrivate } = require('../../providers/storage');
+const { scanBuffer } = require('../../providers/malwareScanner');
 
 const router = Router();
 const t = (max, min = 0) => z.string().trim().min(min).max(max);
@@ -87,8 +88,9 @@ router.post('/media', (req, _res, next) => { if (!can(req.user, 'content.manage'
     if (!req.file) throw badRequest('Choose an image to upload.', { file: 'Required' });
     const ext = (req.file.originalname.split('.').pop() || '').toLowerCase();
     if (!IMG[ext] || !IMG[ext](req.file.buffer)) throw badRequest('Use a PNG, JPG or WebP image.', { file: 'Invalid type' });
+    const scan = await scanBuffer(req.file.buffer);
     const { key, driver } = await putPrivate(req.file.buffer, ext, 'public/media');
-    const asset = await FileAsset.create({ storageKey: key, driver, visibility: 'public', originalName: req.file.originalname.replace(/[^\w.\- ]+/g, '_').slice(0, 120), mime: ext === 'jpg' ? 'image/jpeg' : `image/${ext}`, ext, size: req.file.size, owner: { type: 'media', id: req.user._id } });
+    const asset = await FileAsset.create({ storageKey: key, driver, visibility: 'public', originalName: req.file.originalname.replace(/[^\w.\- ]+/g, '_').slice(0, 120), mime: ext === 'jpg' ? 'image/jpeg' : `image/${ext}`, ext, size: req.file.size, scan, owner: { type: 'media', id: req.user._id } });
     res.status(201).json({ data: { id: asset._id, url: `/api/v1/public/media/${asset._id}` } });
   });
 

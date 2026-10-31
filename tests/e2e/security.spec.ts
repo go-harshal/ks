@@ -33,8 +33,11 @@ test.describe('security regression checks', () => {
     const encrypted = service.encryptTwoFactorSecret(plaintext);
     expect(encrypted).not.toContain(plaintext);
     expect(service.decryptTwoFactorSecret(encrypted)).toBe(plaintext);
-    const tampered = encrypted.slice(0, -1) + (encrypted.endsWith('A') ? 'B' : 'A');
-    expect(() => service.decryptTwoFactorSecret(tampered)).toThrow();
+    const parts = encrypted.split(':');
+    const cipherBytes = Buffer.from(parts[3], 'base64url');
+    cipherBytes[0] ^= 1;
+    parts[3] = cipherBytes.toString('base64url');
+    expect(() => service.decryptTwoFactorSecret(parts.join(':'))).toThrow();
   });
 
   test('file uploads fail closed when the malware scanner is not configured', async () => {

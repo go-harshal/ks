@@ -4,7 +4,7 @@ const API = process.env.API_INTERNAL_URL || 'http://localhost:8001';
 const STATIC_ROUTES = [
   '/', '/services', '/hire-developers', '/industries', '/about', '/work',
   '/insights', '/careers', '/partnerships', '/contact', '/privacy', '/terms',
-  '/cookies', '/newsletter',
+  '/cookies',
 ];
 
 async function publicData(path) {

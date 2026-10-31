@@ -23,7 +23,10 @@ router.patch('/users/:id', async (req, res) => {
   const body = parse(z.object({ role: role.optional(), grants: z.array(z.enum(GRANTABLE)).optional(), name: z.string().min(1).max(120).optional() }), req.body);
   const user = await User.findById(req.params.id);
   if (!user) throw notFound('User not found');
+  if (body.role && req.user.role !== 'super_admin') throw new HttpError(403, 'FORBIDDEN', 'Only a Super Admin can change user roles.');
+  if (body.role === 'super_admin' && req.user.role !== 'super_admin') throw new HttpError(403, 'FORBIDDEN', 'Only a Super Admin can assign the Super Admin role.');
   if (user._id === req.user._id && body.role && body.role !== 'super_admin') throw badRequest('You cannot remove your own Super Admin role.');
+  if (user._id === req.user._id && body.grants) throw badRequest('You cannot change your own permission grants.');
   const before = user.role;
   Object.assign(user, body); await user.save();
   if (body.role && body.role !== before) { await S.revokeUserSessions(user._id); S.logSecurity('role_change', { userId: user._id, req, meta: { from: before, to: body.role, by: req.user._id } }); }
@@ -69,6 +72,7 @@ router.get('/invitations', async (_req, res) => {
 });
 router.post('/invitations', async (req, res) => {
   const body = parse(z.object({ name: z.string().min(1).max(120), email: z.string().email(), role, grants: z.array(z.enum(GRANTABLE)).optional() }), req.body);
+  if (body.role === 'super_admin' && req.user.role !== 'super_admin') throw new HttpError(403, 'FORBIDDEN', 'Only a Super Admin can invite another Super Admin.');
   const email = body.email.toLowerCase();
   if (await User.exists({ email })) throw new HttpError(409, 'EXISTS', 'A user with this email already exists.');
   await Invitation.updateMany({ email, status: 'pending' }, { status: 'revoked' });

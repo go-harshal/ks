@@ -1,7 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
 const permissions = require('../../api/src/config/permissions.js');
 
 test.describe('security regression checks', () => {

@@ -25,6 +25,7 @@ Base: `main` at branch creation. All work is isolated on `patchfix`.
 
 ## Release gates
 
+0. **Credential exposure response:** repository history/commit metadata on the base branch contains a QA login credential. Treat it as compromised: disable or rotate that account immediately, invalidate sessions, check for reuse, and consider history cleanup after coordinating with repository owners. Do not copy the value into issues, docs or logs.
 1. Install dependencies and run API syntax checks, frontend production build, Playwright suite and dependency/security audits.
 2. Run scanner integration tests with a real ClamAV service and EICAR test file in an isolated test environment.
 3. Validate the 2FA key in deployment secret management; do not store it in source control.

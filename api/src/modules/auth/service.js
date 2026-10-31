@@ -15,6 +15,32 @@ const POLICY = {
 };
 
 const sha256 = (v) => crypto.createHash('sha256').update(v).digest('hex');
+
+function twoFactorKey() {
+  const raw = process.env.TOTP_ENCRYPTION_KEY || '';
+  if (!raw) throw new Error('TOTP_ENCRYPTION_KEY must be configured before using two-factor authentication.');
+  const key = Buffer.from(raw, 'base64');
+  if (key.length === 32) return key;
+  // Accept a high-entropy secret of any length and derive a fixed AES-256 key.
+  return crypto.createHash('sha256').update(raw).digest();
+}
+
+function encryptTwoFactorSecret(secret) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', twoFactorKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(secret, 'utf8'), cipher.final()]);
+  return ['v1', iv.toString('base64url'), cipher.getAuthTag().toString('base64url'), encrypted.toString('base64url')].join(':');
+}
+
+function decryptTwoFactorSecret(value) {
+  if (!value) return value;
+  // Legacy plaintext values remain readable for a controlled rolling migration.
+  if (!value.startsWith('v1:')) return value;
+  const [, iv, tag, ciphertext] = value.split(':');
+  const decipher = crypto.createDecipheriv('aes-256-gcm', twoFactorKey(), Buffer.from(iv, 'base64url'));
+  decipher.setAuthTag(Buffer.from(tag, 'base64url'));
+  return Buffer.concat([decipher.update(Buffer.from(ciphertext, 'base64url')), decipher.final()]).toString('utf8');
+}
 const randomToken = () => crypto.randomBytes(32).toString('base64url');
 const hashPassword = (p) => argon2.hash(p, { type: argon2.argon2id });
 const verifyPassword = (hash, p) => argon2.verify(hash, p).catch(() => false);
@@ -71,6 +97,6 @@ function safeUser(u) {
 }
 
 module.exports = {
-  POLICY, COOKIE, sha256, randomToken, hashPassword, verifyPassword, assertStrongPassword,
+  POLICY, COOKIE, sha256, randomToken, hashPassword, verifyPassword, assertStrongPassword, encryptTwoFactorSecret, decryptTwoFactorSecret,
   createSession, clearSessionCookies, revokeUserSessions, logSecurity, safeUser,
 };

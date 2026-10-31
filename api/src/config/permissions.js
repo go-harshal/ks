@@ -9,13 +9,13 @@ const ROLE_PERMS = {
   team_member: ['leads.view_assigned', 'content.draft', 'newsletter.draft'],
 };
 
-// Extra permissions a Super Admin may grant per user (never Super-only ones to Team Members).
-const GRANTABLE = ['partners.manage', 'leads.export', 'leads.assign', 'leads.view_all', 'applications.manage', 'newsletter.manage', 'reports.view', 'content.manage', 'users.manage', 'settings.manage'];
+// Only non-privileged permissions can be delegated. User administration is Super Admin only.
+const GRANTABLE = ['partners.manage', 'leads.export', 'leads.assign', 'leads.view_all', 'applications.manage', 'newsletter.manage', 'reports.view', 'content.manage'];
 
 function permsFor(user) {
   const base = ROLE_PERMS[user.role] || [];
   if (base.includes('*')) return ['*'];
-  const grants = (user.grants || []).filter((g) => GRANTABLE.includes(g) && !(user.role === 'team_member' && SUPER_ONLY.includes(g)));
+  const grants = (user.grants || []).filter((g) => GRANTABLE.includes(g));
   return [...new Set([...base, ...grants])];
 }
 

@@ -52,13 +52,18 @@ router.post('/2fa/verify', limiter(10, 15), async (req, res) => {
   if (!t) throw new HttpError(401, 'CHALLENGE_EXPIRED', 'Sign-in step expired. Please sign in again.');
   const user = await User.findById(t.userId);
   const clean = code.replace(/\s/g, '');
-  let ok = authenticator.verify({ token: clean, secret: user.twoFactor.secret });
+  let ok = authenticator.verify({ token: clean, secret: S.decryptTwoFactorSecret(user.twoFactor.secret) });
   if (!ok) {
     const h = S.sha256(clean.toUpperCase());
     if (user.twoFactor.recoveryHashes.includes(h)) { ok = true; user.twoFactor.recoveryHashes = user.twoFactor.recoveryHashes.filter((x) => x !== h); }
   }
   if (!ok) throw new HttpError(401, 'INVALID_CODE', 'That code is not valid.');
-  t.usedAt = new Date(); await t.save();
+  const consumed = await AuthToken.updateOne({ _id: t._id, usedAt: null, expiresAt: { $gt: new Date() } }, { usedAt: new Date() });
+  if (!consumed.modifiedCount) throw new HttpError(401, 'CHALLENGE_EXPIRED', 'Sign-in step has already been used. Please sign in again.');
+  if (user.twoFactor.secret && !user.twoFactor.secret.startsWith('v1:')) {
+    user.twoFactor.secret = S.encryptTwoFactorSecret(user.twoFactor.secret);
+    await user.save();
+  }
   return completeLogin(req, res, user);
 });
 
@@ -142,15 +147,15 @@ router.post('/invitations/:token', limiter(10, 60), async (req, res) => {
 // 2FA (TOTP) enrolment for the signed-in user
 router.post('/2fa/setup', requireAuth, async (req, res) => {
   const secret = authenticator.generateSecret();
-  req.user.twoFactor.pendingSecret = secret; await req.user.save();
+  req.user.twoFactor.pendingSecret = S.encryptTwoFactorSecret(secret); await req.user.save();
   res.json({ data: { secret, otpauthUrl: authenticator.keyuri(req.user.email, 'Kreyszigg Softbizz', secret) } });
 });
 router.post('/2fa/enable', requireAuth, async (req, res) => {
   const { code } = parse(z.object({ code: z.string().min(6).max(8) }), req.body);
-  const secret = req.user.twoFactor.pendingSecret;
+  const secret = S.decryptTwoFactorSecret(req.user.twoFactor.pendingSecret);
   if (!secret || !authenticator.verify({ token: code.replace(/\s/g, ''), secret })) throw badRequest('That code is not valid.', { code: 'Invalid code' });
   const codes = Array.from({ length: 8 }, () => crypto.randomBytes(5).toString('hex').toUpperCase());
-  req.user.twoFactor = { enabled: true, secret, pendingSecret: undefined, recoveryHashes: codes.map((c) => S.sha256(c)) };
+  req.user.twoFactor = { enabled: true, secret: S.encryptTwoFactorSecret(secret), pendingSecret: undefined, recoveryHashes: codes.map((c) => S.sha256(c)) };
   await req.user.save();
   S.logSecurity('2fa_enabled', { userId: req.user._id, req });
   res.json({ data: { recoveryCodes: codes } });

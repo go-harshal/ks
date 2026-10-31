@@ -5,6 +5,7 @@ const { Lead, FileAsset } = require('./models');
 const { z, parse } = require('../../middleware/validate');
 const { badRequest } = require('../../utils/errors');
 const { putPrivate } = require('../../providers/storage');
+const { scanBuffer } = require('../../providers/malwareScanner');
 const { sendEmail } = require('../../providers/email');
 const { notify } = require('../notifications/service');
 const env = require('../../config/env');
@@ -59,8 +60,9 @@ router.post('/enquiries', limiter, (req, res, next) => upload.single('attachment
     const ext = (req.file.originalname.split('.').pop() || '').toLowerCase();
     const sig = req.file.buffer.subarray(0, 4).toString('hex');
     if (!SIGS[ext] || !SIGS[ext].some((p) => sig.startsWith(p))) throw badRequest('Attachment type not allowed. Use PDF, Word, Excel, PowerPoint, PNG, JPG or ZIP.', { attachment: 'Invalid type' });
+    const scan = await scanBuffer(req.file.buffer);
     const { key, driver } = await putPrivate(req.file.buffer, ext);
-    const asset = await FileAsset.create({ storageKey: key, driver, visibility: 'private', originalName: req.file.originalname.replace(/[^\w.\- ]+/g, '_').slice(0, 120), mime: req.file.mimetype, ext, size: req.file.size, scan: { state: 'unscanned' } });
+    const asset = await FileAsset.create({ storageKey: key, driver, visibility: 'private', originalName: req.file.originalname.replace(/[^\w.\- ]+/g, '_').slice(0, 120), mime: req.file.mimetype, ext, size: req.file.size, scan });
     fileId = asset._id;
   }
 

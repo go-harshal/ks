@@ -7,6 +7,7 @@ const { FileAsset } = require('../leads/models');
 const { z, parse } = require('../../middleware/validate');
 const { badRequest, notFound } = require('../../utils/errors');
 const { putPrivate, readPrivate } = require('../../providers/storage');
+const { scanBuffer } = require('../../providers/malwareScanner');
 const { sendEmail } = require('../../providers/email');
 const { notify } = require('../notifications/service');
 const env = require('../../config/env');
@@ -118,8 +119,9 @@ router.post('/applications', limiter, (req, res, next) => cvUpload.single('cv')(
   const recent = await Application.exists({ jobId: job._id, email: d.email.toLowerCase(), createdAt: { $gt: new Date(Date.now() - 864e5) } });
   if (recent) throw badRequest('We already received your application for this role today.', { email: 'Duplicate' });
 
+  const scan = await scanBuffer(req.file.buffer);
   const { key, driver } = await putPrivate(req.file.buffer, ext, 'private/applications');
-  const asset = await FileAsset.create({ storageKey: key, driver, visibility: 'private', originalName: req.file.originalname.replace(/[^\w.\- ]+/g, '_').slice(0, 120), mime: req.file.mimetype, ext, size: req.file.size });
+  const asset = await FileAsset.create({ storageKey: key, driver, visibility: 'private', originalName: req.file.originalname.replace(/[^\w.\- ]+/g, '_').slice(0, 120), mime: req.file.mimetype, ext, size: req.file.size, scan });
   const app = await Application.create({ ...d, email: d.email.toLowerCase(), jobId: job._id, jobTitle: job.title, cvFileId: asset._id, consent: { version: 'privacy-v1', at: new Date() }, history: [{ kind: 'created', to: 'New', at: new Date() }] });
   await FileAsset.updateOne({ _id: asset._id }, { owner: { type: 'application', id: app._id } });
 

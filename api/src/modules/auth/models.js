@@ -13,7 +13,8 @@ const User = model('User', baseSchema({
   lastLoginAt: Date,
   twoFactor: {
     enabled: { type: Boolean, default: false },
-    secret: String, // TODO(Phase 5): encrypt at rest with ENCRYPTION_KEY
+    secret: String, // AES-256-GCM envelope ciphertext (v1:iv:tag:ciphertext); never expose in API responses.
+    pendingSecret: String, // Encrypted until enrollment is confirmed.
     pendingSecret: String,
     recoveryHashes: [String],
   },

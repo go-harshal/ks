@@ -54,4 +54,12 @@ test.describe('security regression checks', () => {
       else process.env.CLAMAV_HOST = previous;
     }
   });
+
+  test('ClamAV accepts clean input and rejects the EICAR test string when configured', async () => {
+    test.skip(!process.env.CLAMAV_HOST, 'Set CLAMAV_HOST to run the scanner integration checks.');
+    const scanner = require('../../api/src/providers/malwareScanner.js');
+    await expect(scanner.scanBuffer(Buffer.from('ordinary harmless text'))).resolves.toMatchObject({ state: 'clean', engine: 'clamav' });
+    const eicar = String.raw`X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*`;
+    await expect(scanner.scanBuffer(Buffer.from(eicar))).rejects.toMatchObject({ status: 422, code: 'MALWARE_DETECTED' });
+  });
 });

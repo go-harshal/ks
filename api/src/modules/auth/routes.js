@@ -152,7 +152,7 @@ router.post('/2fa/setup', requireAuth, async (req, res) => {
 });
 router.post('/2fa/enable', requireAuth, async (req, res) => {
   const { code } = parse(z.object({ code: z.string().min(6).max(8) }), req.body);
-  const secret = req.user.twoFactor.pendingSecret;
+  const secret = S.decryptTwoFactorSecret(req.user.twoFactor.pendingSecret);
   if (!secret || !authenticator.verify({ token: code.replace(/\s/g, ''), secret })) throw badRequest('That code is not valid.', { code: 'Invalid code' });
   const codes = Array.from({ length: 8 }, () => crypto.randomBytes(5).toString('hex').toUpperCase());
   req.user.twoFactor = { enabled: true, secret: S.encryptTwoFactorSecret(secret), pendingSecret: undefined, recoveryHashes: codes.map((c) => S.sha256(c)) };
